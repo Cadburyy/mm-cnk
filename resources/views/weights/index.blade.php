@@ -48,13 +48,12 @@
                         </datalist>
                     </div>
 
-                    {{-- Search and Reset Buttons --}}
                     <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-secondary me-2 flex-grow-1" type="submit">
+                        <button class="btn btn-success me-2 flex-grow-1" type="submit">
                             <i class="fas fa-search me-1"></i> Cari
                         </button>
-                        <a href="{{ route('weights.index') }}" class="btn btn-outline-danger" title="Reset Filter">
-                            <i class="fas fa-redo"></i>
+                        <a href="{{ route('weights.index') }}" class="btn btn-outline-secondary" title="Reset Filter">
+                            <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>
                 </div>
