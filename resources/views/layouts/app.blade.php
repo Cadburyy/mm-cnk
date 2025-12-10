@@ -3,7 +3,6 @@
 use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
-// Cache settings for performance
 $settings = cache()->remember('app_settings', 60, function () {
     return Setting::pluck('value', 'key')->toArray();
 });
@@ -11,19 +10,13 @@ $settings = cache()->remember('app_settings', 60, function () {
 $brand      = $settings['brand_name'] ?? 'Citra Nugerah Karya';
 $font       = $settings['font'] ?? 'Nunito';
 
-// --- LOGO LOGIC ---
-// 1. Get path from DB
 $logoPath = $settings['logo_path'] ?? '';
-// 2. Normalize slashes (Windows fix)
 $logoPath = str_replace('\\', '/', $logoPath); 
 
-// 3. Determine URL
-// If path exists, use storage link. Otherwise, default image.
 $logoUrl = !empty($logoPath)
     ? asset('storage/'.$logoPath)
     : asset('images/cnk.png');
 
-// --- FAVICON LOGIC ---
 $faviconPath = $settings['favicon_path'] ?? '';
 $faviconPath = str_replace('\\', '/', $faviconPath);
 
@@ -33,7 +26,6 @@ $faviconUrl = !empty($faviconPath)
 
 $fontHrefName = str_replace(' ', '+', $font);
 
-// Helper for contrast color
 function getTextColor($hexColor) {
     $hex = str_replace('#', '', $hexColor);
     if (strlen($hex) == 3) {
@@ -295,15 +287,13 @@ $dropdownTextColor    = getTextColor($dropdownBgColor);
                                 <a class="nav-link" href="{{ route('home') }}">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('items.index') }}">Items</a>
-                            </li>
-                            
-                            {{-- Role restrictions removed as requested --}}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('budget.index') }}">Budget</a>
+                                <a class="nav-link" href="{{ route('items.index') }}">Material</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('weights.index') }}">Weights</a>
+                                <a class="nav-link" href="{{ route('budget.index') }}">Mutasi</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('weights.index') }}">Berat</a>
                             </li>
 
                             <li class="nav-item dropdown">
@@ -313,8 +303,7 @@ $dropdownTextColor    = getTextColor($dropdownBgColor);
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    
-                                    {{-- Role restrictions removed as requested --}}
+
                                     <a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a>
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"

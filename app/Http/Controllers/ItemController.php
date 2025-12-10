@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use App\Models\Weight; // Import the Weight model
+use App\Models\Weight;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -12,7 +12,6 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        // AJAX Handler for Modal Details
         if ($request->ajax() && $request->get('action') === 'pivot_row_details') {
             $id_list = $request->get('id_list');
             
@@ -33,7 +32,6 @@ class ItemController extends Controller
             $total_gkg = $details->sum('gkg');
             $total_scrap = $details->sum('scrap');
             
-            // Map data for the view's JS
             $first_item = $details->first();
             $item_key = ($first_item) ? $first_item->material : 'N/A';
 
@@ -45,11 +43,9 @@ class ItemController extends Controller
             ]);
         }
 
-        // 1. Fetch Filter Data (Dropdowns & Datalists)
         $materials = Item::select('material')->distinct()->whereNotNull('material')->orderBy('material')->pluck('material');
         $parts = Item::select('part')->distinct()->whereNotNull('part')->orderBy('part')->pluck('part');
         
-        // Distinct Years and Months from 'tanggal'
         $distinctDates = Item::select(DB::raw('DISTINCT YEAR(tanggal) as year, DATE_FORMAT(tanggal, "%Y-%m") as ym'))
             ->orderBy('year', 'desc')
             ->orderBy('ym', 'desc')
@@ -60,7 +56,6 @@ class ItemController extends Controller
             return $items->pluck('ym')->unique()->sort();
         });
 
-        // 2. Capture Inputs
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
         $material_term = $request->input('material_term');
@@ -68,21 +63,17 @@ class ItemController extends Controller
         $raw_selections = $request->input('pivot_months', []);
         $mode = $request->input('mode', 'resume');
 
-        // Security check or default for mode
         if ($mode === 'details' && (!auth()->check() || !(method_exists(auth()->user(), 'hasRole') ? auth()->user()->hasRole('Admin|AdminIT') : (auth()->user()->is_admin ?? false)))) {
             $mode = 'resume';
         }
 
-        // 3. Build Query
         $query = Item::query();
         $query->orderBy('tanggal', 'desc');
 
-        // Date Range Filter (if specific dates selected)
         if ($mode == 'details' && $start_date && $end_date) {
             $query->whereBetween('tanggal', [$start_date, $end_date]);
         }
 
-        // Handle Pivot/Filter Logic (Yearly/Monthly selections)
         $selected_months = [];
         $selected_yearly = [];
 
@@ -96,7 +87,6 @@ class ItemController extends Controller
                 }
             }
 
-            // Apply filter based on selections
             if (!empty($selected_months) || !empty($selected_yearly)) {
                 $query->where(function($q) use ($selected_months, $selected_yearly) {
                     foreach ($selected_months as $ym) {
@@ -110,7 +100,6 @@ class ItemController extends Controller
             }
         }
 
-        // Text Filters
         if ($material_term) {
             $query->where('material', 'LIKE', '%' . $material_term . '%');
         }
@@ -118,10 +107,8 @@ class ItemController extends Controller
             $query->where('part', 'LIKE', '%' . $part_term . '%');
         }
 
-        // Execute Query
         $items = $query->get();
 
-        // 4. Process Pivot Data (Resume Mode)
         $summary_rows = [];
         $months = [];
 
@@ -129,7 +116,6 @@ class ItemController extends Controller
             $final_months = [];
             $yearly_mode = $request->input('yearly_mode', 'total'); 
 
-            // Setup Columns for Yearly selections
             foreach ($selected_yearly as $yearEntry) {
                 $parts = explode('|', $yearEntry);
                 $year = $parts[0];
@@ -143,7 +129,6 @@ class ItemController extends Controller
                 }
             }
 
-            // Setup Columns for Monthly selections
             $temp_months = [];
             foreach ($selected_months as $ym) {
                 try {
@@ -156,14 +141,12 @@ class ItemController extends Controller
             ksort($temp_months);
             $months = array_merge($final_months, $temp_months);
 
-            // Aggregate Data
             foreach ($items as $item) {
                 $year = Carbon::parse($item->tanggal)->format('Y');
                 $month_year = Carbon::parse($item->tanggal)->format('Y-m');
-                
-                // Key based on Material only
+
                 $key = $item->material;
-                $qty = $item->gkg; // Using GKG as the main quantity
+                $qty = $item->gkg;
                 $item_id = $item->id;
                 
                 if (!isset($summary_rows[$key])) {
@@ -184,7 +167,6 @@ class ItemController extends Controller
                 $summary_rows[$key]['row_ids'][] = $item_id;
             }
 
-            // Finalize Aggregates
             foreach ($summary_rows as $key => $row) {
                 foreach ($selected_yearly as $yearEntry) {
                     $parts = explode('|', $yearEntry);
@@ -202,8 +184,7 @@ class ItemController extends Controller
                     }
                 }
                 $summary_rows[$key]['row_ids'] = implode(',', array_unique($summary_rows[$key]['row_ids']));
-                
-                // Clean up temp arrays
+
                 unset($summary_rows[$key]['annual_totals']);
                 unset($summary_rows[$key]['annual_months_count']);
             }
@@ -218,7 +199,6 @@ class ItemController extends Controller
 
     public function create()
     {
-        // UPDATED: Fetch all weights to pass to the view for autocomplete
         $weights = Weight::all(); 
         return view('items.create', compact('weights'));
     }
@@ -228,11 +208,11 @@ class ItemController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'material' => 'required|string',
-            'berat_mentah' => 'nullable|numeric',
-            'gpcs' => 'nullable|numeric',
-            'gkg' => 'nullable|numeric',
-            'scrap' => 'nullable|numeric',
-            'cakalan' => 'nullable|numeric',
+            'berat_mentah' => 'nullable|numeric|min:0',
+            'gpcs' => 'nullable|numeric|min:0',
+            'gkg' => 'nullable|numeric|min:0',
+            'scrap' => 'nullable|numeric|min:0',
+            'cakalan' => 'nullable|numeric|min:0',
         ]);
 
         $data = $request->all();
@@ -246,7 +226,6 @@ class ItemController extends Controller
     public function edit($id)
     {
         $item = Item::findOrFail($id);
-        // ADDED: Fetch weights so the autocomplete works on Edit page too
         $weights = Weight::all(); 
         return view('items.edit', compact('item', 'weights'));
     }
@@ -256,11 +235,11 @@ class ItemController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'material' => 'required|string',
-            'berat_mentah' => 'nullable|numeric',
-            'gpcs' => 'nullable|numeric',
-            'gkg' => 'nullable|numeric',
-            'scrap' => 'nullable|numeric',
-            'cakalan' => 'nullable|numeric',
+            'berat_mentah' => 'nullable|numeric|min:0',
+            'gpcs' => 'nullable|numeric|min:0',
+            'gkg' => 'nullable|numeric|min:0',
+            'scrap' => 'nullable|numeric|min:0',
+            'cakalan' => 'nullable|numeric|min:0',
         ]);
 
         $item = Item::findOrFail($id);
@@ -287,7 +266,6 @@ class ItemController extends Controller
             return back()->with('error', 'No items selected.');
         }
         
-        // Flatten array if needed (comma separated strings)
         $all_ids = [];
         foreach($selected as $val) {
             $all_ids = array_merge($all_ids, explode(',', $val));

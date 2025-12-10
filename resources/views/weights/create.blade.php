@@ -2,54 +2,46 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Add New Weight</h2>
-        <a class="btn btn-secondary" href="{{ route('weights.index') }}">
-            <i class="fa fa-arrow-left"></i> Back
-        </a>
-    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-primary">
+                <div class="card-header bg-warning text-primary fw-bold">
+                    <h5 class="mb-0">Tambah Data Berat</h5>
+                </div>
+                <form action="{{ route('weights.store') }}" method="POST">
+                    @csrf
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Material</label>
+                            <input type="text" name="material" class="form-control text-uppercase @error('material') is-invalid @enderror" value="{{ old('material') }}" required autocomplete="off" oninput="this.value = this.value.toUpperCase()">
+                            @error('material')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-    @if ($errors->any())
-    <div class="alert alert-danger shadow-sm rounded-3">
-        <strong>Whoops!</strong> There were some problems with your input.<br><br>
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Part</label>
+                            <input type="text" name="part" class="form-control text-uppercase @error('part') is-invalid @enderror" value="{{ old('part') }}" required autocomplete="off" oninput="this.value = this.value.toUpperCase()">
+                            @error('part')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-    <div class="card shadow-sm rounded-3 p-4">
-        <form action="{{ route('weights.store') }}" method="POST">
-            @csrf
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="material" class="form-label"><strong>Material:</strong></label>
-                        <input type="text" name="material" class="form-control text-uppercase" value="{{ old('material') }}" required autocomplete='off' oninput="this.value = this.value.toUpperCase()">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Standard Berat (Gram)</label>
+                            <input type="number" step="0.01" name="weight" class="form-control @error('weight') is-invalid @enderror" value="{{ old('weight') }}" required autocomplete="off">
+                            @error('weight')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="part" class="form-label"><strong>Part:</strong></label>
-                        <input type="text" name="part" class="form-control text-uppercase" value="{{ old('part') }}" required autocomplete='off' oninput="this.value = this.value.toUpperCase()">
+                    <div class="card-footer text-end">
+                        <a href="{{ route('weights.index') }}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Configuration</button>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="weight" class="form-label"><strong>Weight (Gram):</strong></label>
-                        <input type="number" step="0.01" name="weight" class="form-control" value="{{ old('weight') }}" required autocomplete='off'>
-                    </div>
-                </div>
-
-                <div class="col-12 text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fa-solid fa-floppy-disk me-2"></i> Submit
-                    </button>
-                </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 @endsection

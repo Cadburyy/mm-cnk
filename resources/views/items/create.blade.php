@@ -3,9 +3,9 @@
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
+        <div class="col-md-10">
+            <div class="card shadow border-primary">
+                <div class="card-header bg-warning text-primary fw-bold">
                     <h5 class="mb-0">Input Data Produksi Baru</h5>
                 </div>
                 <form action="{{ route('items.store') }}" method="POST">
@@ -18,7 +18,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Material</label>
-                                <input type="text" name="material" id="input_material" class="form-control text-uppercase" required autocomplete="off" oninput="this.value = this.value.toUpperCase()" list="material_options" placeholder="Type or select material...">
+                                <input type="text" name="material" id="input_material" class="form-control text-uppercase" required autocomplete="off" oninput="this.value = this.value.toUpperCase()" list="material_options">
                                 <datalist id="material_options">
                                 </datalist>
                             </div>
@@ -27,7 +27,7 @@
                         <div class="row mb-3">
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Part</label>
-                                <input type="text" name="part" id="input_part" class="form-control text-uppercase" autocomplete="off" oninput="this.value = this.value.toUpperCase()" list="part_options" placeholder="Type or select part...">
+                                <input type="text" name="part" id="input_part" class="form-control text-uppercase" autocomplete="off" oninput="this.value = this.value.toUpperCase()" list="part_options">
                                 <datalist id="part_options">
                                 </datalist>
                             </div>
@@ -41,7 +41,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Berat Mentah</label>
-                                <input type="number" step="0.001" name="berat_mentah" class="form-control" value="0" autocomplete="off">
+                                <input type="number" step="0.01" name="berat_mentah" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                         </div>
 
@@ -50,27 +50,27 @@
 
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label class="form-label">Goods PCS</label>
-                                <input type="number" step="0.001" name="gpcs" id="input_gpcs" class="form-control" value="0" autocomplete="off">
+                                <label class="form-label fw-bold">Barang Jadi (PCS)</label>
+                                <input type="number" step="0.01" name="gpcs" id="input_gpcs" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted">Goods Weight (Gram)</label>
-                                <input type="number" step="0.0001" id="input_gweight" class="form-control bg-light" placeholder="Auto-filled" readonly tabindex="-1">
+                                <label class="form-label fw-bold">Barang/Gram</label>
+                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-light" readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Goods (KG)</label>
-                                <input type="number" step="0.001" name="gkg" id="input_gkg" class="form-control" value="0" autocomplete="off" readonly>
+                                <label class="form-label fw-bold">Barang Jadi (KG)</label>
+                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control" value="0" autocomplete="off" readonly>
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Scrap (KG)</label>
-                                <input type="number" step="0.001" name="scrap" class="form-control" value="0" autocomplete="off">
+                                <label class="form-label fw-bold">Scrap (KG)</label>
+                                <input type="number" step="0.01" name="scrap" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Cakalan (KG)</label>
-                                <input type="number" step="0.001" name="cakalan" class="form-control" value="0" autocomplete="off">
+                                <label class="form-label fw-bold">Cakalan (KG)</label>
+                                <input type="number" step="0.01" name="cakalan" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                         </div>
                     </div>
@@ -143,7 +143,7 @@
             
             if (pcs > 0 && weight > 0) {
                 const total = (pcs * weight) / 1000;
-                gkgInput.value = total.toFixed(3); 
+                gkgInput.value = total.toFixed(2); 
             } else {
                 gkgInput.value = '0';
             }

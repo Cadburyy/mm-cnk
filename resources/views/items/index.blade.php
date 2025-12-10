@@ -219,7 +219,6 @@
                             <tbody>
                                 @foreach($items as $item)
                                     @php
-                                        // Calculate Deficit: Berat Mentah - Goods - Scrap - Cakalan
                                         $deficit = $item->berat_mentah - $item->gkg - $item->scrap - $item->cakalan;
                                     @endphp
                                     <tr>
@@ -417,12 +416,12 @@ $(function() {
         const yearlyMode = $('#yearlyMode').val() || 'total';
         
         yearlyYears.forEach(y => {
-            $('<input>').attr({type: 'hidden', name: 'pivot_months[]', value: 'YEARLY-' + y + '|' + yearlyMode}).appendTo('#filterForm');
+            $('<div>').html('<input type="hidden" name="pivot_months[]" value="YEARLY-' + y + '|' + yearlyMode + '">').children().appendTo('#filterForm');
         });
 
         const monthly = $('.monthly-month-checkbox:checked').map(function(){ return $(this).val(); }).get();
         monthly.forEach(ym => {
-            $('<input>').attr({type: 'hidden', name: 'pivot_months[]', value: ym}).appendTo('#filterForm');
+            $('<div>').html('<input type="hidden" name="pivot_months[]" value="' + ym + '">').children().appendTo('#filterForm');
         });
     }
 

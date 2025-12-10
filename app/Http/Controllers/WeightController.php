@@ -8,13 +8,31 @@ use Illuminate\Validation\Rule;
 
 class WeightController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $weights = Weight::orderBy('material', 'asc')
-                         ->orderBy('part', 'asc')
-                         ->paginate(10);
-                         
-        return view('weights.index', compact('weights'));
+        $materialSearch = $request->input('material_search');
+        $partSearch = $request->input('part_search');
+
+        $query = Weight::orderBy('material', 'asc')
+                       ->orderBy('part', 'asc');
+        
+        if ($materialSearch) {
+            $query->where('material', 'like', '%' . $materialSearch . '%');
+        }
+
+        if ($partSearch) {
+            $query->where('part', 'like', '%' . $partSearch . '%');
+        }
+
+        $weights = $query->paginate(10)->appends([
+            'material_search' => $materialSearch,
+            'part_search' => $partSearch,
+        ]);
+
+        $uniqueMaterials = Weight::select('material')->distinct()->pluck('material');
+        $uniqueParts = Weight::select('part')->distinct()->pluck('part');
+
+        return view('weights.index', compact('weights', 'uniqueMaterials', 'uniqueParts'));
     }
 
     public function create()
