@@ -200,7 +200,6 @@ class MutationController extends Controller
         if (empty($ids)) return back()->with('error', 'No data selected for download');
 
         $items = Item::whereIn('id', $ids)->where('transaction_type', 'mutation')->orderBy('tanggal', 'desc')->get();
-        // Time removed from filename
         $filename = "mutations_export_" . date('Ymd') . ".csv";
 
         $headers = [
