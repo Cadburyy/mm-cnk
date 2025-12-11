@@ -75,7 +75,8 @@ class ItemController extends Controller
         }
 
         if ($mode == 'resume') {
-            $selected_months = []; $selected_yearly = [];
+            $selected_months = [];
+            $selected_yearly = [];
             $raw_selections = array_filter((array)$raw_selections);
             foreach ($raw_selections as $selection) {
                 if (str_starts_with($selection, 'YEARLY-')) $selected_yearly[] = str_replace('YEARLY-', '', $selection); else $selected_months[] = $selection;
@@ -112,11 +113,9 @@ class ItemController extends Controller
                 $item_id = $item->id;
 
                 $multiplier = ($item->transaction_type === 'mutation') ? -1 : 1;
-
                 $val_gkg = $item->gkg * $multiplier;
                 $val_scrap = $item->scrap * $multiplier;
                 $val_cakalan = $item->cakalan * $multiplier;
-
                 $total_all = $val_gkg + $val_scrap + $val_cakalan;
 
                 if (!isset($summary_tree[$mat])) $summary_tree[$mat] = ['total_all' => 0, 'months_all' => [], 'parts' => [], 'ids' => []];
@@ -175,11 +174,52 @@ class ItemController extends Controller
         return redirect()->route('items.index')->with('success','Updated'); 
     }
     public function destroy($id) { Item::destroy($id); return back()->with('success','Deleted'); }
+    
     public function bulkDestroy(Request $request) { 
         $s=(array)$request->input('selected_ids',[]); if(empty($s)) return back()->with('error','No selection');
         $ids=[]; foreach($s as $v) $ids=array_merge($ids, explode(',',$v));
         Item::whereIn('id',$ids)->delete(); return back()->with('success','Deleted');
     }
+
+    public function downloadCsv(Request $request)
+    {
+        $ids = (array)$request->input('selected_ids', []);
+        if (empty($ids)) return back()->with('error', 'No data selected for download');
+
+        $items = Item::whereIn('id', $ids)->orderBy('tanggal', 'desc')->get();
+        $filename = "items_production_export_" . date('Ymd') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($items) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'Material', 'Part', 'Lot', 'Kode', 'Berat Mentah', 'Barang Jadi (GKG)', 'Scrap', 'Cakalan']);
+
+            foreach ($items as $item) {
+                fputcsv($file, [
+                    $item->tanggal->format('Y-m-d'),
+                    $item->material,
+                    $item->part,
+                    $item->no_lot,
+                    $item->kode,
+                    $item->berat_mentah,
+                    $item->gkg,
+                    $item->scrap,
+                    $item->cakalan
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     private function uppercaseFields(array &$data) { 
         foreach(['material','part','no_lot','kode'] as $f) if(isset($data[$f])&&is_string($data[$f])) $data[$f]=strtoupper($data[$f]); 
     }

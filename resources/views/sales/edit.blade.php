@@ -22,7 +22,7 @@
                                 <input type="date" name="tanggal" class="form-control" value="{{ $item->tanggal->format('Y-m-d') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Customer (Tujuan)</label>
+                                <label class="form-label fw-bold">Customer</label>
                                 <input type="text" name="customer" class="form-control text-uppercase" value="{{ $item->customer }}" required>
                             </div>
                         </div>
@@ -30,18 +30,18 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Material</label>
-                                <select name="material" id="input_material" class="form-select" required>
-                                    <option value="">-- Pilih Material --</option>
+                                <input type="text" name="material" id="input_material" class="form-control text-uppercase" list="material_list" value="{{ $item->material }}" required autocomplete="off">
+                                <datalist id="material_list">
                                     @foreach($materials as $m)
-                                        <option value="{{ $m }}" {{ $m == $item->material ? 'selected' : '' }}>{{ $m }}</option>
+                                        <option value="{{ $m }}">
                                     @endforeach
-                                </select>
+                                </datalist>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Part</label>
-                                <select name="part" id="input_part" class="form-select" required>
-                                    <option value="{{ $item->part }}" selected>{{ $item->part }}</option>
-                                </select>
+                                <input type="text" name="part" id="input_part" class="form-control text-uppercase" list="part_list" value="{{ $item->part }}" required autocomplete="off">
+                                <datalist id="part_list">
+                                </datalist>
                             </div>
                         </div>
 
@@ -52,8 +52,8 @@
                                 <input type="hidden" id="input_type" value="{{ $item->scrap > 0 ? 'scrap' : ($item->cakalan > 0 ? 'cakalan' : 'gkg') }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold text-success">Sisa Stock (KG)</label>
-                                <input type="text" id="display_stock" class="form-control bg-secondary text-white fw-bold font-monospace" value="Loading..." readonly tabindex="-1">
+                                <label class="form-label fw-bold">Sisa Stock (KG)</label>
+                                <input type="text" id="display_stock" class="form-control" value="Loading..." readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Berat (KG)</label>
@@ -74,14 +74,31 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        const matSelect = $('#input_material');
-        const partSelect = $('#input_part');
+        const matInput = $('#input_material');
+        const partInput = $('#input_part');
+        const partList = $('#part_list');
         const typeVal = $('#input_type').val();
         const stockDisplay = $('#display_stock');
 
+        function fetchParts(material) {
+            if (!material) {
+                partList.empty();
+                return;
+            }
+            $.ajax({
+                url: '{{ route("sales.index") }}',
+                data: { action: 'get_parts', material: material },
+                success: function(res) {
+                    let html = '';
+                    res.forEach(function(p) { html += `<option value="${p}">`; });
+                    partList.html(html);
+                }
+            });
+        }
+
         function fetchStock() {
-            const mat = matSelect.val();
-            const part = partSelect.val();
+            const mat = matInput.val();
+            const part = partInput.val();
 
             if (mat && part) {
                 stockDisplay.val('Checking...');
@@ -90,31 +107,27 @@
                     data: { action: 'check_stock', material: mat, part: part, type: typeVal },
                     success: function(res) {
                         stockDisplay.val(res.stock);
-                    }
+                    },
+                    error: function() { stockDisplay.val('Error'); }
                 });
+            } else {
+                stockDisplay.val('0.00');
             }
         }
 
-        matSelect.change(function() {
+        matInput.on('input change', function() {
             const mat = $(this).val();
-            partSelect.html('<option value="">Loading...</option>').prop('disabled', true);
-            stockDisplay.val('0.00');
-
-            if (mat) {
-                $.ajax({
-                    url: '{{ route("sales.index") }}',
-                    data: { action: 'get_parts', material: mat },
-                    success: function(res) {
-                        let html = '<option value="">-- Pilih Part --</option>';
-                        res.forEach(function(p) { html += `<option value="${p}">${p}</option>`; });
-                        partSelect.html(html).prop('disabled', false);
-                    }
-                });
-            }
+            fetchParts(mat);
+            fetchStock();
         });
 
-        partSelect.change(fetchStock);
-        fetchStock();
+        partInput.on('input change', fetchStock);
+
+        const initialMat = matInput.val();
+        if(initialMat) {
+            fetchParts(initialMat);
+            fetchStock();
+        }
     });
 </script>
 @endsection

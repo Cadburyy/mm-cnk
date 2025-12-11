@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow border-primary">
-                <div class="card-header bg-primary text-white fw-bold">
+                <div class="card-header bg-primary text-primary fw-bold">
                     <h5 class="mb-0">Input Mutasi Penjualan</h5>
                 </div>
                 <form action="{{ route('sales.store') }}" method="POST">
@@ -21,14 +21,14 @@
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Customer (Tujuan)</label>
+                                <label class="form-label fw-bold">Customer</label>
                                 <input type="text" name="customer" class="form-control text-uppercase" required autocomplete="off">
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Material (Dari Mutasi)</label>
+                                <label class="form-label fw-bold">Material</label>
                                 <input type="text" name="material" id="input_material" class="form-control text-uppercase" list="material_list" required autocomplete="off">
                                 <datalist id="material_list">
                                     @foreach($materials as $m)
@@ -37,7 +37,7 @@
                                 </datalist>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Part (Dari Mutasi)</label>
+                                <label class="form-label fw-bold">Part</label>
                                 <input type="text" name="part" id="input_part" class="form-control text-uppercase" list="part_list" required autocomplete="off" disabled>
                                 <datalist id="part_list"></datalist>
                             </div>
@@ -47,15 +47,15 @@
 
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Ambil Stok Dari</label>
+                                <label class="form-label fw-bold">Tipe Barang</label>
                                 <select name="tipe_barang" id="input_type" class="form-select" required>
                                     <option value="scrap">Scrap</option>
                                     <option value="cakalan">Cakalan</option>
                                 </select>
                             </div>
                              <div class="col-md-4">
-                                <label class="form-label fw-bold text-primary">Sisa Stock (KG)</label>
-                                <input type="text" id="display_stock" class="form-control bg-secondary text-white fw-bold font-monospace" value="0.00" readonly tabindex="-1">
+                                <label class="form-label fw-bold">Sisa Stock (KG)</label>
+                                <input type="text" id="display_stock" class="form-control" readonly tabindex="-1">
                                 <small class="text-muted d-block mt-1">*Stock di Mutasi</small>
                             </div>
                             <div class="col-md-4">
@@ -66,7 +66,7 @@
                     </div>
                     <div class="card-footer text-end">
                         <a href="{{ route('sales.index') }}" class="btn btn-secondary me-2">Batal</a>
-                        <button type="submit" class="btn btn-primary">Simpan Penjualan</button>
+                        <button type="submit" class="btn btn-primary">Tambah Penjualan</button>
                     </div>
                 </form>
             </div>

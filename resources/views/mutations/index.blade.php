@@ -72,7 +72,10 @@
                     @endif
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    @if ($mode == 'details') <button type="button" id="bulkDeleteBtn" class="btn btn-danger shadow-sm">Delete Selected</button> @endif
+                    @if ($mode == 'details')
+                        <button type="button" id="downloadCsvBtn" class="btn btn-dark shadow-sm"><i class="fas fa-file-csv me-1"></i> Download CSV</button>
+                        <button type="button" id="bulkDeleteBtn" class="btn btn-danger shadow-sm">Delete Selected</button>
+                    @endif
                     <input type="hidden" name="mode" value="{{ $mode }}">
                     @foreach($raw_selections as $p) <input type="hidden" name="pivot_months[]" value="{{ $p }}"> @endforeach
                     <button type="submit" class="btn btn-success shadow"><i class="fas fa-search me-1"></i>Cari</button>
@@ -90,7 +93,7 @@
     </div>
 
     <div class="card shadow-lg">
-        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Net Stock (Mutasi - Penjualan)' }}</div>
+        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Mutasi' }}</div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
                 <p class="text-center text-muted p-4">Tidak ada data ditemukan.</p>
@@ -100,25 +103,24 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
+                                    <th class="text-center"><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
-                                        <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
+                                        <td class="text-center"><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
                                         <td class="text-center">
                                             <a href="{{ route('mutations.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                                         </td>
                                         <td>{{ $item->tanggal->format('d/m/Y') }}</td>
-                                        <td>{{ $item->material }}</td><td>{{ $item->part }}</td><td>{{ $item->no_lot }}</td>
+                                        <td>{{ $item->material }}</td><td>{{ $item->part }}</td>
                                         <td>
-                                            @if($item->gkg > 0) <span class="badge bg-success">GKG</span>
-                                            @elseif($item->scrap > 0) <span class="badge bg-warning text-dark">Scrap</span>
+                                            @if($item->scrap > 0) <span class="badge bg-warning text-dark">Scrap</span>
                                             @elseif($item->cakalan > 0) <span class="badge bg-secondary">Cakalan</span>
                                             @endif
                                         </td>
-                                        <td class="text-end fw-bold">{{ number_format($item->gkg + $item->scrap + $item->cakalan, 2) }}</td>
+                                        <td class="text-end fw-bold">{{ number_format($item->scrap + $item->cakalan, 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -166,8 +168,7 @@
                                             @endif
                                             <td class="text-end font-monospace fw-bold small {{ $partData['total_all'] < 0 ? 'text-danger' : '' }}">{{ number_format($partData['total_all'], 0, ',', '.') }}</td>
                                         </tr>
-                                        <!-- BREAKDOWN ROWS -->
-                                        @foreach(['gkg' => 'GKG', 'scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
+                                        @foreach(['scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
                                             @if(($partData['total_'.$metricKey] ?? 0) != 0)
                                             <tr class="child-part-{{ $partUniqueId }}" style="display:none; background-color: #fdfdfd;">
                                                 <td></td>
@@ -250,8 +251,7 @@ $(function() {
         const btn = $(this);
         const target = $(btn.data('target'));
         const icon = btn.find('i');
-        if (target.is(':visible')) { target.hide(); icon.removeClass('fa-minus').addClass('fa-plus'); }
-        else { target.show(); icon.removeClass('fa-plus').addClass('fa-minus'); }
+        if (target.is(':visible')) { target.hide(); icon.removeClass('fa-minus').addClass('fa-plus'); } else { target.show(); icon.removeClass('fa-plus').addClass('fa-minus'); }
     });
     $(document).on('click', '.stop-propagation', function(e) { e.stopPropagation(); });
 
@@ -292,27 +292,23 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">GKG</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     res.details.forEach(d => {
-                        let total = parseFloat(d.gkg) + parseFloat(d.scrap) + parseFloat(d.cakalan);
                         let isMut = d.transaction_type === 'sale';
-                        let displayVal = isMut ? -total : total;
                         
                         let badgeClass = d.transaction_type === 'mutation' ? 'bg-success' : 'bg-warning text-dark';
                         let typeLabel = d.transaction_type === 'mutation' ? 'MUTATION (IN)' : 'SALE (OUT)';
-                        
-                        let rawGkg = parseFloat(d.gkg) || 0;
+
                         let rawScrap = parseFloat(d.scrap) || 0;
                         let rawCakalan = parseFloat(d.cakalan) || 0;
 
-                        let dispGkg = isMut ? -rawGkg : rawGkg;
                         let dispScrap = isMut ? -rawScrap : rawScrap;
                         let dispCakalan = isMut ? -rawCakalan : rawCakalan;
 
                         let textClass = isMut ? 'text-danger fw-bold' : 'text-dark';
 
-                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td><td class="text-end ${textClass}">${formatNumberJS(dispGkg)}</td><td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td><td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
+                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td><td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td><td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
                     });
                     html += '</tbody></table>';
                 }
@@ -323,6 +319,16 @@ $(function() {
 
     $('#select-all-details').on('change', function() { $('.select-detail').prop('checked', $(this).is(':checked')); });
     $('#bulkDeleteBtn').on('click', function() { const s=$('.select-detail:checked').map((_,e)=>$(e).val()).get(); if(!s.length) return alert('Pilih data.'); $('#bulkDeleteIdsContainer').empty(); s.forEach(v=>$('<input>').attr({type:'hidden',name:'selected_ids[]',value:v}).appendTo('#bulkDeleteIdsContainer')); $('#deleteRecordDesc').text('Total '+s.length+' records.'); $('#deleteConfirmModal').modal('show'); });
+    $('#downloadCsvBtn').on('click', function() { 
+        const s = $('.select-detail:checked').map((_, e) => $(e).val()).get();
+        if (!s.length) return alert('Pilih data untuk di-download.');
+        let form = $('<form method="POST" action="{{ route('mutations.downloadCsv') }}">');
+        form.append('<input type="hidden" name="_token" value="{{ csrf_token() }}">');
+        s.forEach(v => form.append('<input type="hidden" name="selected_ids[]" value="' + v + '">'));
+        $('body').append(form);
+        form.submit();
+        form.remove();
+    });
     $('#confirmDeleteBtn').on('click', function() { $('#bulkDeleteForm').submit(); });
 });
 </script>

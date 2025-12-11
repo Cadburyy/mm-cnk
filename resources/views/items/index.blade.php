@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">📊 Data Stock Barang</h1>
+        <h1 class="text-dark">📊 Data Transaksi Barang</h1>
         <div>
             <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus me-1"></i> Input Produksi
@@ -72,7 +72,10 @@
                     @endif
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    @if ($mode == 'details') <button type="button" id="bulkDeleteBtn" class="btn btn-danger shadow-sm">Delete Selected</button> @endif
+                    @if ($mode == 'details')
+                        <button type="button" id="downloadCsvBtn" class="btn btn-dark shadow-sm"><i class="fas fa-file-csv me-1"></i> Download CSV</button>
+                        <button type="button" id="bulkDeleteBtn" class="btn btn-danger shadow-sm">Delete Selected</button>
+                    @endif
                     <input type="hidden" name="mode" value="{{ $mode }}">
                     @foreach($raw_selections as $p) <input type="hidden" name="pivot_months[]" value="{{ $p }}"> @endforeach
                     <button type="submit" class="btn btn-success shadow"><i class="fas fa-search me-1"></i>Cari</button>
@@ -91,7 +94,7 @@
 
     <div class="card shadow-lg">
         <div class="card-header bg-info text-black">
-            {{ $mode == 'details' ? 'Hasil Data - Details (Hanya Produksi)' : 'Hasil Data - Net Stock (Produksi - Mutasi)' }}
+            {{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Produksi' }}
         </div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
@@ -102,13 +105,13 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah</th><th class="text-end">Goods</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Deficit</th>
+                                    <th class="text-center"><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah (KG)</th><th class="text-end">Barang Jadi (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Deficit (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
-                                        <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
+                                        <td class="text-center"><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
                                         <td class="text-center"><a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a></td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ $item->material }}</td><td>{{ $item->part }}</td><td>{{ $item->no_lot }}</td><td>{{ $item->kode }}</td>
@@ -122,7 +125,6 @@
                             </tbody>
                         </table>
                     @elseif ($mode == 'resume')
-                        <!-- VISUAL TABLE RESUME 3 LEVEL (Material -> Part -> Breakdown) -->
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
@@ -142,7 +144,6 @@
                                         $matTotal = $matData['total_all'];
                                     @endphp
 
-                                    <!-- LEVEL 1: MATERIAL (Click opens Popup, Toggle expands to Part) -->
                                     <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" 
                                         data-id-list="{{ $matIds }}" 
                                         data-metric="mix"
@@ -166,7 +167,6 @@
                                         <td class="text-end fw-bold font-monospace bg-light {{ $matTotal < 0 ? 'text-danger' : '' }}">{{ number_format($matTotal, 2, ',', '.') }}</td>
                                     </tr>
 
-                                    <!-- LEVEL 2: PART (Click opens Popup, Toggle expands to Breakdown) -->
                                     @foreach($matData['parts'] as $part => $partData)
                                         @php
                                             $partUniqueId = md5($material . $part);
@@ -195,8 +195,7 @@
                                             @endif
                                             <td class="text-end font-monospace fw-bold small {{ $partTotal < 0 ? 'text-danger' : '' }}">{{ number_format($partTotal, 2, ',', '.') }}</td>
                                         </tr>
-                                        
-                                        <!-- LEVEL 3: BREAKDOWN (GKG/SCRAP/CAKALAN) - NO Popup, Visual Only -->
+
                                         @foreach(['gkg' => 'Barang Jadi (GKG)', 'scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
                                             @if(($partData['total_'.$metricKey] ?? 0) != 0)
                                             <tr class="child-part-{{ $partUniqueId }}" style="display:none; background-color: #fdfdfd;">
@@ -225,7 +224,6 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP -->
     <div class="modal fade" id="pivotDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl"> 
             <div class="modal-content">
@@ -325,9 +323,8 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">GKG</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Barang Jadi (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
-                    
                     res.details.forEach(d => {
                         let isMut = d.transaction_type === 'mutation';
                         let typeLabel = isMut ? 'OUT' : 'IN';
@@ -357,6 +354,16 @@ $(function() {
 
     $('#select-all-details').on('change', function() { $('.select-detail').prop('checked', $(this).is(':checked')); });
     $('#bulkDeleteBtn').on('click', function() { const s=$('.select-detail:checked').map((_,e)=>$(e).val()).get(); if(!s.length) return alert('Pilih data.'); $('#bulkDeleteIdsContainer').empty(); s.forEach(v=>$('<input>').attr({type:'hidden',name:'selected_ids[]',value:v}).appendTo('#bulkDeleteIdsContainer')); $('#deleteRecordDesc').text('Total '+s.length+' records.'); $('#deleteConfirmModal').modal('show'); });
+    $('#downloadCsvBtn').on('click', function() { 
+        const s = $('.select-detail:checked').map((_, e) => $(e).val()).get();
+        if (!s.length) return alert('Pilih data untuk di-download.');
+        let form = $('<form method="POST" action="{{ route('items.downloadCsv') }}">');
+        form.append('<input type="hidden" name="_token" value="{{ csrf_token() }}">');
+        s.forEach(v => form.append('<input type="hidden" name="selected_ids[]" value="' + v + '">'));
+        $('body').append(form);
+        form.submit();
+        form.remove();
+    });
     $('#confirmDeleteBtn').on('click', function() { $('#bulkDeleteForm').submit(); });
 });
 </script>

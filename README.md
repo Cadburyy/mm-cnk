@@ -61,6 +61,10 @@ Once the database is ready, run migrations and seed default data:
    ```bash
    php artisan migrate:fresh --seed
    ```
+   ```bash
+   php artisan db:seed --class=PermissionTableSeeder
+   php artisan db:seed --class=CreateAdminUserSeeder
+   ```
 2. This will create all required tables and insert initial data.
 
 ---

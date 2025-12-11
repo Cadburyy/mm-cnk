@@ -26,15 +26,18 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::middleware(['auth'])->group(function () {
     Route::resource('items', ItemController::class);
     Route::post('/items/bulk-destroy', [ItemController::class, 'bulkDestroy'])->name('items.bulkDestroy');
-
-    Route::resource('weights', WeightController::class);
-    Route::post('/weights/bulk-destroy', [WeightController::class, 'bulkDestroy'])->name('weights.bulkDestroy');
+    Route::post('/items/download-csv', [ItemController::class, 'downloadCsv'])->name('items.downloadCsv');
     
     Route::resource('mutations', MutationController::class);
     Route::post('/mutations/bulk-destroy', [MutationController::class, 'bulkDestroy'])->name('mutations.bulkDestroy');
-
+    Route::post('/mutations/download-csv', [MutationController::class, 'downloadCsv'])->name('mutations.downloadCsv');
+    
     Route::resource('sales', SaleController::class);
     Route::post('/sales/bulk-destroy', [SaleController::class, 'bulkDestroy'])->name('sales.bulkDestroy');
+    Route::post('/sales/download-csv', [SaleController::class, 'downloadCsv'])->name('sales.downloadCsv');
+
+    Route::resource('weights', WeightController::class);
+    Route::post('/weights/bulk-destroy', [WeightController::class, 'bulkDestroy'])->name('weights.bulkDestroy');
 
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::get('/settings/appearance', [SettingsController::class, 'editAppearance'])->name('settings.appearance');

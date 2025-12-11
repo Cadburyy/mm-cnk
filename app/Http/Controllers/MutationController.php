@@ -122,11 +122,10 @@ class MutationController extends Controller
                 $item_id = $item->id;
 
                 $multiplier = ($item->transaction_type === 'sale') ? -1 : 1;
-                $total_all = ($item->gkg + $item->scrap + $item->cakalan) * $multiplier;
-
                 $val_gkg = $item->gkg * $multiplier;
                 $val_scrap = $item->scrap * $multiplier;
                 $val_cakalan = $item->cakalan * $multiplier;
+                $total_all = $val_gkg + $val_scrap + $val_cakalan;
 
                 if (!isset($summary_tree[$mat])) $summary_tree[$mat] = ['total_all' => 0, 'months_all' => [], 'parts' => [], 'ids' => []];
                 if (!isset($summary_tree[$mat]['parts'][$part])) {
@@ -170,7 +169,7 @@ class MutationController extends Controller
     }
 
     public function create() { $materials = Item::where('transaction_type', 'production')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('mutations.create', compact('materials')); }
-    public function store(Request $request) {
+    public function store(Request $request) { 
         $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','tipe_barang'=>'required|in:gkg,scrap,cakalan','berat'=>'required|numeric|min:0.01']);
         $col = $request->tipe_barang; $filter = [['material','=',$request->material], ['part','=',$request->part]];
         $prod = Item::where('transaction_type','production')->where($filter)->sum($col);
@@ -180,7 +179,7 @@ class MutationController extends Controller
         return redirect()->route('mutations.index')->with('success','Saved');
     }
     public function edit($id) { $item = Item::where('id',$id)->where('transaction_type','mutation')->firstOrFail(); $materials = Item::where('transaction_type','production')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('mutations.edit', compact('item','materials')); }
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id) { 
         $item = Item::where('id',$id)->where('transaction_type','mutation')->firstOrFail();
         $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','berat'=>'required|numeric|min:0.01']);
         $col = ($item->scrap > 0) ? 'scrap' : (($item->cakalan > 0) ? 'cakalan' : 'gkg');
@@ -192,5 +191,45 @@ class MutationController extends Controller
         return redirect()->route('mutations.index')->with('success','Updated');
     }
     public function destroy($id) { Item::where('id',$id)->where('transaction_type','mutation')->delete(); return back()->with('success','Deleted'); }
+    
     public function bulkDestroy(Request $request) { $s=(array)$request->input('selected_ids',[]); $ids=[]; foreach($s as $v) $ids=array_merge($ids, explode(',',$v)); Item::whereIn('id',$ids)->where('transaction_type','mutation')->delete(); return back()->with('success','Deleted'); }
+
+    public function downloadCsv(Request $request)
+    {
+        $ids = (array)$request->input('selected_ids', []);
+        if (empty($ids)) return back()->with('error', 'No data selected for download');
+
+        $items = Item::whereIn('id', $ids)->where('transaction_type', 'mutation')->orderBy('tanggal', 'desc')->get();
+        // Time removed from filename
+        $filename = "mutations_export_" . date('Ymd') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($items) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'Material', 'Part', 'Tipe Barang', 'Berat (KG)']);
+
+            foreach ($items as $item) {
+                $tipe = $item->gkg > 0 ? 'GKG' : ($item->scrap > 0 ? 'Scrap' : 'Cakalan');
+                $berat = $item->gkg + $item->scrap + $item->cakalan;
+                
+                fputcsv($file, [
+                    $item->tanggal->format('Y-m-d'),
+                    $item->material,
+                    $item->part,
+                    $tipe,
+                    $berat
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

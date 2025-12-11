@@ -28,13 +28,12 @@ class SaleController extends Controller
                 $type = $request->get('type'); 
 
                 $filter = [['material', '=', $mat], ['part', '=', $part]];
-
                 $mut = Item::where('transaction_type', 'mutation')->where($filter)->sum($type);
                 $sold = Item::where('transaction_type', 'sale')->where($filter)->sum($type);
                 
                 return response()->json(['stock' => round($mut - $sold, 2)]);
             }
-
+            
             if ($request->get('action') === 'pivot_row_details') {
                 $id_list = $request->get('id_list');
                 $pivotSelections = $request->get('pivot_months', []);
@@ -137,7 +136,7 @@ class SaleController extends Controller
 
         $col = $request->tipe_barang; 
         $filter = [['material', '=', $request->material], ['part', '=', $request->part]];
-
+        
         $mut = Item::where('transaction_type', 'mutation')->where($filter)->sum($col);
         $sold = Item::where('transaction_type', 'sale')->where($filter)->sum($col);
         $avail = $mut - $sold;
@@ -158,6 +157,13 @@ class SaleController extends Controller
         ]);
 
         return redirect()->route('sales.index')->with('success', 'Data Penjualan Disimpan (Stock Mutasi Berkurang)');
+    }
+
+    public function edit($id)
+    {
+        $item = Item::where('id', $id)->where('transaction_type', 'sale')->firstOrFail();
+        $materials = Item::where('transaction_type', 'mutation')->select('material')->distinct()->orderBy('material')->pluck('material');
+        return view('sales.edit', compact('item', 'materials'));
     }
 
     public function update(Request $request, $id) {
@@ -184,8 +190,48 @@ class SaleController extends Controller
     }
     
     public function destroy($id) { Item::where('id', $id)->where('transaction_type', 'sale')->delete(); return back()->with('success', 'Deleted'); }
+    
     public function bulkDestroy(Request $request) { 
         $s=(array)$request->input('selected_ids',[]); $ids=[]; foreach($s as $v) $ids=array_merge($ids, explode(',',$v)); 
         Item::whereIn('id',$ids)->where('transaction_type', 'sale')->delete(); return back()->with('success','Deleted'); 
+    }
+
+    public function downloadCsv(Request $request)
+    {
+        $ids = (array)$request->input('selected_ids', []);
+        if (empty($ids)) return back()->with('error', 'No data selected for download');
+
+        $items = Item::whereIn('id', $ids)->where('transaction_type', 'sale')->orderBy('tanggal', 'desc')->get();
+        $filename = "sales_export_" . date('Ymd') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($items) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'Customer', 'Material', 'Part', 'Tipe Barang', 'Berat (KG)']);
+
+            foreach ($items as $item) {
+                $tipe = $item->gkg > 0 ? 'GKG' : ($item->scrap > 0 ? 'Scrap' : 'Cakalan');
+                $berat = $item->gkg + $item->scrap + $item->cakalan;
+                
+                fputcsv($file, [
+                    $item->tanggal->format('Y-m-d'),
+                    $item->customer,
+                    $item->material,
+                    $item->part,
+                    $tipe,
+                    $berat
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

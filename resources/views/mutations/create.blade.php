@@ -21,7 +21,7 @@
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Material (Sumber: Items)</label>
+                                <label class="form-label fw-bold">Material</label>
                                 <input type="text" name="material" id="input_material" class="form-control text-uppercase" list="material_list" required autocomplete="off">
                                 <datalist id="material_list">
                                     @foreach($materials as $m)
@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Part (Sumber: Items)</label>
+                            <label class="form-label fw-bold">Part</label>
                             <input type="text" name="part" id="input_part" class="form-control text-uppercase" list="part_list" required autocomplete="off" disabled>
                             <datalist id="part_list"></datalist>
                         </div>
@@ -41,15 +41,15 @@
 
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Tipe Barang (Source)</label>
+                                <label class="form-label fw-bold">Tipe Barang</label>
                                 <select name="tipe_barang" id="input_type" class="form-select" required>
                                     <option value="scrap">Scrap</option>
                                     <option value="cakalan">Cakalan</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold text-success">Sisa Stock (KG)</label>
-                                <input type="text" id="display_stock" class="form-control bg-secondary text-white fw-bold font-monospace" value="0.00" readonly tabindex="-1">
+                                <label class="form-label fw-bold">Sisa Stock (KG)</label>
+                                <input type="text" id="display_stock" class="form-control" readonly tabindex="-1">
                                 <small class="text-muted d-block mt-1">*Stock di Produksi</small>
                             </div>
                             <div class="col-md-4">
@@ -60,7 +60,7 @@
                     </div>
                     <div class="card-footer text-end">
                         <a href="{{ route('mutations.index') }}" class="btn btn-secondary me-2">Batal</a>
-                        <button type="submit" class="btn btn-primary">Simpan Mutasi</button>
+                        <button type="submit" class="btn btn-primary">Tambah Mutasi</button>
                     </div>
                 </form>
             </div>
