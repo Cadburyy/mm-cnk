@@ -4,7 +4,7 @@
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">⚖️ Data Berat</h1>
+        <h1 class="text-dark">⚖️ Data Berat Barang</h1>
         <a class="btn btn-primary shadow-sm" href="{{ route('weights.create') }}">
             <i class="fas fa-plus me-1"></i> Tambah Berat
         </a>

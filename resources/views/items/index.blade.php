@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">📊 Data Transaksi Barang</h1>
+        <h1 class="text-dark">📊 Data Stock Barang</h1>
         <div>
             <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus me-1"></i> Input Produksi

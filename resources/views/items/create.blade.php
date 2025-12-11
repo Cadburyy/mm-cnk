@@ -46,7 +46,6 @@
                         </div>
 
                         <hr>
-                        <h6 class="text-primary fw-bold mb-3">Hasil Produksi</h6>
 
                         <div class="row mb-3">
                             <div class="col-md-4">

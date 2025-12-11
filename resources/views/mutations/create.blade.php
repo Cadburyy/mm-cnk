@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow border-primary">
-                <div class="card-header bg-primary text-white fw-bold">
+                <div class="card-header bg-primary text-primary fw-bold">
                     <h5 class="mb-0">Input Mutasi Barang</h5>
                 </div>
                 <form action="{{ route('mutations.store') }}" method="POST">
@@ -22,41 +22,39 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Material (Sumber: Items)</label>
-                                <select name="material" id="input_material" class="form-select" required>
-                                    <option value="">-- Pilih Material --</option>
+                                <input type="text" name="material" id="input_material" class="form-control text-uppercase" list="material_list" required autocomplete="off">
+                                <datalist id="material_list">
                                     @foreach($materials as $m)
-                                        <option value="{{ $m }}">{{ $m }}</option>
+                                        <option value="{{ $m }}">
                                     @endforeach
-                                </select>
+                                </datalist>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Part (Sumber: Items)</label>
-                            <select name="part" id="input_part" class="form-select" required disabled>
-                                <option value="">-- Pilih Material Dulu --</option>
-                            </select>
+                            <input type="text" name="part" id="input_part" class="form-control text-uppercase" list="part_list" required autocomplete="off" disabled>
+                            <datalist id="part_list"></datalist>
                         </div>
 
                         <hr>
 
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Tipe Barang</label>
+                                <label class="form-label fw-bold">Tipe Barang (Source)</label>
                                 <select name="tipe_barang" id="input_type" class="form-select" required>
-                                    <option value="gkg">Barang Jadi (GKG)</option>
                                     <option value="scrap">Scrap</option>
                                     <option value="cakalan">Cakalan</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold text-success">Sisa Stock (Items)</label>
+                                <label class="form-label fw-bold text-success">Sisa Stock (KG)</label>
                                 <input type="text" id="display_stock" class="form-control bg-secondary text-white fw-bold font-monospace" value="0.00" readonly tabindex="-1">
-                                <small class="text-muted d-block mt-1">*Data dari page Produksi</small>
+                                <small class="text-muted d-block mt-1">*Stock di Produksi</small>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Kuantitas (KG)</label>
-                                <input type="number" step="0.01" name="berat" class="form-control" required placeholder="0.00">
+                                <label class="form-label fw-bold">Berat Mutasi (KG)</label>
+                                <input type="number" step="0.01" name="berat" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -73,14 +71,15 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        const matSelect = $('#input_material');
-        const partSelect = $('#input_part');
+        const matInput = $('#input_material');
+        const partInput = $('#input_part');
+        const partList = $('#part_list');
         const typeSelect = $('#input_type');
         const stockDisplay = $('#display_stock');
 
         function fetchStock() {
-            const mat = matSelect.val();
-            const part = partSelect.val();
+            const mat = matInput.val();
+            const part = partInput.val();
             const type = typeSelect.val();
 
             if (mat && part && type) {
@@ -98,9 +97,10 @@
             }
         }
 
-        matSelect.change(function() {
+        matInput.on('input change', function() {
             const mat = $(this).val();
-            partSelect.html('<option value="">Loading...</option>').prop('disabled', true);
+            partInput.val('').prop('disabled', true);
+            partList.empty();
             stockDisplay.val('0.00');
 
             if (mat) {
@@ -108,17 +108,16 @@
                     url: '{{ route("mutations.index") }}',
                     data: { action: 'get_parts', material: mat },
                     success: function(res) {
-                        let html = '<option value="">-- Pilih Part --</option>';
-                        res.forEach(function(p) { html += `<option value="${p}">${p}</option>`; });
-                        partSelect.html(html).prop('disabled', false);
+                        let html = '';
+                        res.forEach(function(p) { html += `<option value="${p}">`; });
+                        partList.html(html);
+                        partInput.prop('disabled', false);
                     }
                 });
-            } else {
-                partSelect.html('<option value="">-- Pilih Material Dulu --</option>').prop('disabled', true);
             }
         });
 
-        partSelect.change(fetchStock);
+        partInput.on('input change', fetchStock);
         typeSelect.change(fetchStock);
     });
 </script>

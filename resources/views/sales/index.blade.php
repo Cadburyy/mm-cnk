@@ -3,9 +3,9 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">💰 Data Penjualan</h1>
+        <h1 class="text-dark">💰 Data Penjualan Barang</h1>
         <div>
-            <a href="{{ route('sales.create') }}" class="btn btn-success shadow-sm">
+            <a href="{{ route('sales.create') }}" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus me-1"></i> Input Penjualan
             </a>
         </div>
@@ -255,7 +255,6 @@ $(function() {
     });
     $(document).on('click', '.stop-propagation', function(e) { e.stopPropagation(); });
 
-    // POPUP MODAL LOGIC
     $(document).on('click', '.parent-row', function(e) {
         if ($(e.target).closest('.toggle-btn').length) return;
         const idList = $(this).data('id-list');

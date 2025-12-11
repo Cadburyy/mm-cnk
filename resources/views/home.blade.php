@@ -35,7 +35,7 @@
         <span role="img" aria-label="wave">👋</span>
     </h2>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 justify-content-center mt-3 mb-5">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4 justify-content-center mt-3 mb-5">
         <div class="col">
             <a href="{{ route('items.index') }}" class="text-decoration-none card-link-hover">
                 <div class="card h-100 text-center shadow-sm p-3">
