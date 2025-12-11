@@ -8,11 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+
         Schema::dropIfExists('items');
 
         Schema::create('items', function (Blueprint $table) {
             $table->id();
+            $table->string('transaction_type')->default('production')->index();
             $table->date('tanggal');
+            $table->string('customer')->nullable();
             $table->string('material');
             $table->string('part')->nullable();
             $table->string('no_lot')->nullable();
@@ -22,6 +25,7 @@ return new class extends Migration
             $table->decimal('gkg', 15, 2)->default(0);
             $table->decimal('scrap', 15, 2)->default(0);
             $table->decimal('cakalan', 15, 2)->default(0);
+
             $table->timestamps();
         });
     }

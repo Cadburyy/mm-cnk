@@ -10,9 +10,10 @@ class Item extends Model
     use HasFactory;
 
     protected $fillable = [
+        'transaction_type',
         'tanggal',
+        'customer',
         'material',
-        'produk',
         'part',
         'no_lot',
         'kode',

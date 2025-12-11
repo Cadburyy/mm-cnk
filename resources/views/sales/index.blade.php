@@ -3,10 +3,10 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">📊 Data Transaksi Barang</h1>
+        <h1 class="text-dark">💰 Data Penjualan</h1>
         <div>
-            <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm">
-                <i class="fas fa-plus me-1"></i> Input Produksi
+            <a href="{{ route('sales.create') }}" class="btn btn-success shadow-sm">
+                <i class="fas fa-plus me-1"></i> Input Penjualan
             </a>
         </div>
     </div>
@@ -14,10 +14,10 @@
     @if (session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
     @if (session('error')) <div class="alert alert-danger">{{ session('error') }}</div> @endif
 
-    <form method="GET" action="{{ route('items.index') }}" class="row mb-4" id="filterForm">
+    <form method="GET" action="{{ route('sales.index') }}" class="row mb-4" id="filterForm">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">Filter Data Barang</div>
+                <div class="card-header bg-light fw-bold">Filter Data</div>
                 <div class="card-body">
                     @if ($mode == 'details')
                          <div class="row g-3 mb-2">
@@ -76,23 +76,21 @@
                     <input type="hidden" name="mode" value="{{ $mode }}">
                     @foreach($raw_selections as $p) <input type="hidden" name="pivot_months[]" value="{{ $p }}"> @endforeach
                     <button type="submit" class="btn btn-success shadow"><i class="fas fa-search me-1"></i>Cari</button>
-                    <a href="{{ route('items.index') }}" class="btn btn-outline-secondary shadow"><i class="fas fa-redo"></i> Reset</a>
+                    <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary shadow"><i class="fas fa-redo"></i> Reset</a>
                 </div>
             </div>
         </div>
     </form>
     
-    <form id="bulkDeleteForm" method="POST" action="{{ route('items.bulkDestroy') }}" style="display:none;">@csrf<div id="bulkDeleteIdsContainer"></div></form>
+    <form id="bulkDeleteForm" method="POST" action="{{ route('sales.bulkDestroy') }}" style="display:none;">@csrf<div id="bulkDeleteIdsContainer"></div></form>
 
     <div class="d-flex mb-3 gap-2">
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume (Stock Balance)</a>
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details (Production Input)</a>
+        <a href="{{ route('sales.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume (Net Stock)</a>
+        <a href="{{ route('sales.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details (Records)</a>
     </div>
 
     <div class="card shadow-lg">
-        <div class="card-header bg-info text-black">
-            {{ $mode == 'details' ? 'Hasil Data - Details (Hanya Produksi)' : 'Hasil Data - Net Stock (Produksi - Mutasi)' }}
-        </div>
+        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Net Stock (Total Penjualan)' }}</div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
                 <p class="text-center text-muted p-4">Tidak ada data ditemukan.</p>
@@ -102,27 +100,31 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah</th><th class="text-end">Goods</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Deficit</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Customer</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
                                         <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
-                                        <td class="text-center"><a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a></td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ $item->material }}</td><td>{{ $item->part }}</td><td>{{ $item->no_lot }}</td><td>{{ $item->kode }}</td>
-                                        <td class="text-end">{{ number_format($item->berat_mentah, 2) }}</td>
-                                        <td class="text-end">{{ number_format($item->gkg, 2) }}</td>
-                                        <td class="text-end">{{ number_format($item->scrap, 2) }}</td>
-                                        <td class="text-end">{{ number_format($item->cakalan, 2) }}</td>
-                                        <td class="text-end {{ ($item->berat_mentah - $item->gkg - $item->scrap - $item->cakalan) != 0 ? 'text-danger' : 'text-success' }}">{{ number_format($item->berat_mentah - $item->gkg - $item->scrap - $item->cakalan, 2) }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ route('sales.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                        </td>
+                                        <td>{{ $item->tanggal->format('d/m/Y') }}</td>
+                                        <td class="fw-bold text-primary">{{ $item->customer }}</td>
+                                        <td>{{ $item->material }}</td><td>{{ $item->part }}</td>
+                                        <td>
+                                            @if($item->gkg > 0) <span class="badge bg-success">GKG</span>
+                                            @elseif($item->scrap > 0) <span class="badge bg-warning text-dark">Scrap</span>
+                                            @elseif($item->cakalan > 0) <span class="badge bg-secondary">Cakalan</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end fw-bold">{{ number_format($item->gkg + $item->scrap + $item->cakalan, 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     @elseif ($mode == 'resume')
-                        <!-- VISUAL TABLE RESUME 3 LEVEL (Material -> Part -> Breakdown) -->
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
@@ -131,90 +133,56 @@
                                     @if (count($months) > 0)
                                         @foreach($months as $m) <th class="text-nowrap text-center" style="min-width:80px;">{{ $m['label'] }}</th> @endforeach
                                     @endif
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total (All)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($summary_tree as $material => $matData)
-                                    @php
-                                        $matUniqueId = md5($material);
-                                        $matIds = implode(',', array_unique($matData['ids']));
-                                        $matTotal = $matData['total_all'];
-                                    @endphp
-
-                                    <!-- LEVEL 1: MATERIAL (Click opens Popup, Toggle expands to Part) -->
-                                    <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" 
-                                        data-id-list="{{ $matIds }}" 
-                                        data-metric="mix"
-                                        data-level="material" 
-                                        data-name="{{ $material }}">
-                                        
+                                    @php $matUniqueId = md5($material); $matIds = implode(',', array_unique($matData['ids'])); @endphp
+                                    <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" data-id-list="{{ $matIds }}" data-metric="mix" data-level="material" data-name="{{ $material }}">
                                         <td class="text-center stop-propagation">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-btn" 
-                                                data-target=".child-mat-{{ $matUniqueId }}">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-btn" data-target=".child-mat-{{ $matUniqueId }}"><i class="fas fa-plus"></i></button>
                                         </td>
                                         <td class="fw-bold text-primary">{{ $material }}</td>
-
                                         @if (count($months) > 0)
-                                            @foreach($months as $m)
+                                            @foreach($months as $m) 
                                                 @php $val = $matData['months_all'][$m['key']] ?? 0; @endphp
-                                                <td class="text-end font-monospace {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 2, ',', '.') }}</td>
+                                                <td class="text-end font-monospace {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 0, ',', '.') }}</td> 
                                             @endforeach
                                         @endif
-                                        <td class="text-end fw-bold font-monospace bg-light {{ $matTotal < 0 ? 'text-danger' : '' }}">{{ number_format($matTotal, 2, ',', '.') }}</td>
+                                        <td class="text-end fw-bold font-monospace bg-light {{ $matData['total_all'] < 0 ? 'text-danger' : '' }}">{{ number_format($matData['total_all'], 0, ',', '.') }}</td>
                                     </tr>
-
-                                    <!-- LEVEL 2: PART (Click opens Popup, Toggle expands to Breakdown) -->
                                     @foreach($matData['parts'] as $part => $partData)
-                                        @php
-                                            $partUniqueId = md5($material . $part);
-                                            $partIds = implode(',', array_unique($partData['ids']));
-                                            $partTotal = $partData['total_all'];
-                                        @endphp
-                                        <tr class="child-mat-{{ $matUniqueId }} parent-row" style="display:none; background-color: #fff; cursor: pointer;"
-                                             data-id-list="{{ $partIds }}" 
-                                             data-metric="mix"
-                                             data-level="part"
-                                             data-name="{{ $part }}">
+                                        @php $partUniqueId = md5($material . $part); $partIds = implode(',', array_unique($partData['ids'])); @endphp
+                                        <tr class="child-mat-{{ $matUniqueId }} parent-row" style="display:none; background-color: #fff; cursor:pointer;" data-id-list="{{ $partIds }}" data-metric="mix" data-level="part" data-name="{{ $part }}">
                                             <td class="text-center stop-propagation">
-                                                 <button type="button" class="btn btn-sm btn-light border btn-xs ms-2 toggle-btn" 
-                                                    data-target=".child-part-{{ $partUniqueId }}">
-                                                    <i class="fas fa-plus fa-xs"></i>
-                                                </button>
+                                                 <button type="button" class="btn btn-sm btn-light border btn-xs ms-2 toggle-btn" data-target=".child-part-{{ $partUniqueId }}"><i class="fas fa-plus fa-xs"></i></button>
                                             </td>
-                                            <td class="ps-4 fw-bold text-dark">
-                                                <i class="fas fa-cube me-1 text-muted"></i> {{ $part }} 
-                                            </td>
+                                            <td class="ps-4 fw-bold text-dark"><i class="fas fa-cube me-1 text-muted"></i> {{ $part }}</td>
                                             @if (count($months) > 0)
                                                 @foreach($months as $m) 
                                                     @php $val = $partData['months_all'][$m['key']] ?? 0; @endphp
-                                                    <td class="text-end font-monospace small {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 2, ',', '.') }}</td> 
+                                                    <td class="text-end font-monospace small {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 0, ',', '.') }}</td> 
                                                 @endforeach
                                             @endif
-                                            <td class="text-end font-monospace fw-bold small {{ $partTotal < 0 ? 'text-danger' : '' }}">{{ number_format($partTotal, 2, ',', '.') }}</td>
+                                            <td class="text-end font-monospace fw-bold small {{ $partData['total_all'] < 0 ? 'text-danger' : '' }}">{{ number_format($partData['total_all'], 0, ',', '.') }}</td>
                                         </tr>
-                                        
-                                        <!-- LEVEL 3: BREAKDOWN (GKG/SCRAP/CAKALAN) - NO Popup, Visual Only -->
-                                        @foreach(['gkg' => 'Barang Jadi (GKG)', 'scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
+                                        <!-- BREAKDOWN ROWS -->
+                                        @foreach(['gkg' => 'GKG', 'scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
                                             @if(($partData['total_'.$metricKey] ?? 0) != 0)
                                             <tr class="child-part-{{ $partUniqueId }}" style="display:none; background-color: #fdfdfd;">
                                                 <td></td>
-                                                <td class="ps-5 text-dark small">
-                                                    <i class="fas fa-arrow-right me-1"></i> {{ $label }}
-                                                </td>
+                                                <td class="ps-5 text-dark small"><i class="fas fa-arrow-right me-1"></i> {{ $label }}</td>
                                                 @if (count($months) > 0)
                                                     @foreach($months as $m)
                                                         @php $val = $partData['months_'.$metricKey][$m['key']] ?? 0; @endphp
-                                                        <td class="text-end font-monospace small text-muted {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 2, ',', '.') }}</td> 
+                                                        <td class="text-end font-monospace small text-muted {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 0, ',', '.') }}</td> 
                                                     @endforeach
                                                 @endif
-                                                <td class="text-end font-monospace small {{ $partData['total_'.$metricKey] < 0 ? 'text-danger' : '' }}">{{ number_format($partData['total_'.$metricKey], 2, ',', '.') }}</td>
+                                                <td class="text-end font-monospace small {{ $partData['total_'.$metricKey] < 0 ? 'text-danger' : '' }}">{{ number_format($partData['total_'.$metricKey], 0, ',', '.') }}</td>
                                             </tr>
                                             @endif
                                         @endforeach
-
                                     @endforeach
                                 @endforeach
                             </tbody>
@@ -225,11 +193,10 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP -->
     <div class="modal fade" id="pivotDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl"> 
             <div class="modal-content">
-                <div class="modal-header bg-info text-white"><h5 class="modal-title">Detail Transaksi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header bg-info text-white"><h5 class="modal-title">Detail Penjualan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <div id="detail-loading" class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat data...</p></div>
                     <div id="detail-content" style="display: none;">
@@ -288,6 +255,7 @@ $(function() {
     });
     $(document).on('click', '.stop-propagation', function(e) { e.stopPropagation(); });
 
+    // POPUP MODAL LOGIC
     $(document).on('click', '.parent-row', function(e) {
         if ($(e.target).closest('.toggle-btn').length) return;
         const idList = $(this).data('id-list');
@@ -300,7 +268,7 @@ $(function() {
         $('#detail-content').hide(); $('#detail-loading').show(); $('#monthly-subtotals-list').empty(); $('#monthly-subtotals-container').hide();
 
         $.ajax({
-            url: '{{ route("items.index") }}',
+            url: '{{ route("sales.index") }}',
             data: { action: 'pivot_row_details', id_list: idList, pivot_months: pivotSelections, metric: metric },
             success: function(res) {
                 $('#detail-loading').hide(); $('#detail-content').show();
@@ -327,11 +295,13 @@ $(function() {
                 if(res.details && res.details.length > 0) {
                     let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">GKG</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
-                    
                     res.details.forEach(d => {
-                        let isMut = d.transaction_type === 'mutation';
-                        let typeLabel = isMut ? 'OUT' : 'IN';
-                        let badgeClass = isMut ? 'bg-warning text-dark' : 'bg-success';
+                        let total = parseFloat(d.gkg) + parseFloat(d.scrap) + parseFloat(d.cakalan);
+                        let isMut = d.transaction_type === 'sale';
+                        let displayVal = isMut ? -total : total;
+                        
+                        let badgeClass = d.transaction_type === 'mutation' ? 'bg-success' : 'bg-warning text-dark';
+                        let typeLabel = d.transaction_type === 'mutation' ? 'MUTATION (IN)' : 'SALE (OUT)';
                         
                         let rawGkg = parseFloat(d.gkg) || 0;
                         let rawScrap = parseFloat(d.scrap) || 0;
@@ -343,10 +313,7 @@ $(function() {
 
                         let textClass = isMut ? 'text-danger fw-bold' : 'text-dark';
 
-                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td>
-                        <td class="text-end ${textClass}">${formatNumberJS(dispGkg)}</td>
-                        <td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td>
-                        <td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
+                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td><td class="text-end ${textClass}">${formatNumberJS(dispGkg)}</td><td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td><td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
                     });
                     html += '</tbody></table>';
                 }

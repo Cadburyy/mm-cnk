@@ -287,10 +287,13 @@ $dropdownTextColor    = getTextColor($dropdownBgColor);
                                 <a class="nav-link" href="{{ route('home') }}">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('items.index') }}">Material</a>
+                                <a class="nav-link" href="{{ route('items.index') }}">Produksi</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('budget.index') }}">Mutasi</a>
+                                <a class="nav-link" href="{{ route('mutations.index') }}">Mutasi</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('sales.index') }}">Penjualan</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('weights.index') }}">Berat</a>
