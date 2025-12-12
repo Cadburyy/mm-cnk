@@ -38,9 +38,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('weights', WeightController::class);
     Route::post('/weights/bulk-destroy', [WeightController::class, 'bulkDestroy'])->name('weights.bulkDestroy');
-});
-
-Route::middleware(['auth', 'role:AdminIT'])->group(function () {
+    
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     
     Route::get('/settings/appearance', [SettingsController::class, 'editAppearance'])->name('settings.appearance');

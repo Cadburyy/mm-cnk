@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 
 class WeightController extends Controller
 {
+    function __construct()
+    {
+        $this->middleware('permission:weight');
+    }
+
     public function index(Request $request)
     {
         $materialSearch = $request->input('material_search');
@@ -51,7 +56,7 @@ class WeightController extends Controller
                 'max:255',
                 Rule::unique('weights')->where(function ($query) use ($request) {
                     return $query->where('material', $request->material)
-                                 ->where('part', $request->part);
+                                     ->where('part', $request->part);
                 })
             ],
         ], [
@@ -79,7 +84,7 @@ class WeightController extends Controller
                 'max:255',
                 Rule::unique('weights')->where(function ($query) use ($request) {
                     return $query->where('material', $request->material)
-                                 ->where('part', $request->part);
+                                     ->where('part', $request->part);
                 })->ignore($weight->id)
             ],
             'part' => 'required|string|max:255',

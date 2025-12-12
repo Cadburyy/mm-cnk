@@ -10,6 +10,11 @@ use Carbon\Carbon;
 
 class ItemController extends Controller
 {
+    function __construct()
+    {
+         $this->middleware('permission:item');
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax() && $request->get('action') === 'pivot_row_details') {

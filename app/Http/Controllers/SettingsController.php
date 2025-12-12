@@ -9,6 +9,15 @@ use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
+    function __construct()
+    {
+        // Only allow users with 'setting' permission to access index
+        $this->middleware('permission:setting', ['only' => ['index']]);
+        
+        // Only allow users with 'appearance' permission to access appearance pages
+        $this->middleware('permission:appearance', ['only' => ['editAppearance', 'updateAppearance']]);
+    }
+
     public function index()
     {
         return view('settings.index');

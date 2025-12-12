@@ -8,24 +8,23 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $permissions = [
-           'role-list',
-           'role-create',
-           'role-edit',
-           'role-delete',
-           'product-list',
-           'product-create',
-           'product-edit',
-           'product-delete'
+           'role',
+           'user',
+           'setting',
+           'appearance',
+           'item',
+           'mutation',
+           'sale',
+           'weight',
         ];
 
         foreach ($permissions as $permission) {
-             Permission::create(['name' => $permission]);
+             if (Permission::where('name', $permission)->doesntExist()) {
+                 Permission::create(['name' => $permission]);
+             }
         }
     }
 }

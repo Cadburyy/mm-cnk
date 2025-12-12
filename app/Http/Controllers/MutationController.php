@@ -9,6 +9,11 @@ use Carbon\Carbon;
 
 class MutationController extends Controller
 {
+    function __construct()
+    {
+         $this->middleware('permission:mutation');
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {

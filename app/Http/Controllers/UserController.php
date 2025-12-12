@@ -14,10 +14,14 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    function __construct()
+    {
+        $this->middleware('permission:user');
+    }
 
     private function checkAdminITProtection(User $targetUser): ?RedirectResponse
     {
-        if (Auth::user()->hasRole('Admin')) {
+        if (Auth::user()->hasRole('User')) {
             if ($targetUser->hasRole('AdminIT')) {
                 return redirect()->route('users.index')
                     ->with('error', 'The Admin role is not permitted to modify or delete users with the AdminIT role.');

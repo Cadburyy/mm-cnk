@@ -26,19 +26,19 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="name" class="form-label"><strong>Name:</strong></label>
-                    <input type="text" name="name" id="name" placeholder="Name" class="form-control" value="{{ old('name') }}" autocomplete="off">
+                    <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" autocomplete="off">
                 </div>
                 <div class="col-md-6">
                     <label for="email" class="form-label"><strong>Email:</strong></label>
-                    <input type="email" name="email" id="email" placeholder="Email" class="form-control" value="{{ old('email') }}" autocomplete="off">
+                    <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" autocomplete="off">
                 </div>
                 <div class="col-md-6">
                     <label for="password" class="form-label"><strong>Password:</strong></label>
-                    <input type="password" name="password" id="password" placeholder="Password" class="form-control">
+                    <input type="password" name="password" id="password" class="form-control">
                 </div>
                 <div class="col-md-6">
                     <label for="confirm-password" class="form-label"><strong>Confirm Password:</strong></label>
-                    <input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password" class="form-control">
+                    <input type="password" name="confirm-password" id="confirm-password" class="form-control">
                 </div>
                 <div class="col-12">
                     <label for="roles" class="form-label"><strong>Role:</strong></label>

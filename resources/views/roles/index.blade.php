@@ -44,7 +44,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Role Management</h2>
-        @can('role-create')
+        @can('role')
             <a class="btn btn-primary" href="{{ route('roles.create') }}">
                 <i class="fa fa-plus me-2"></i> Create New Role
             </a>
@@ -87,14 +87,14 @@
                                                 <i class="fa-solid fa-eye me-2 text-info"></i> View
                                             </a>
                                         </li>
-                                        @can('role-edit')
+                                        @can('role')
                                         <li>
                                             <a class="dropdown-item" href="{{ route('roles.edit', $role->id) }}">
                                                 <i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit
                                             </a>
                                         </li>
                                         @endcan
-                                        @can('role-delete')
+                                        @can('role')
                                         <li>
                                             <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-action="{{ route('roles.destroy', $role->id) }}">
                                                 <i class="fa-solid fa-trash me-2"></i> Delete

@@ -6,7 +6,7 @@
         <div class="col-md-10">
             <div class="card shadow border-warning">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">Edit Data Produksi - "{{ $item->no_lot ?? 'No Lot' }}"</h5>
+                    <h5 class="mb-0">Edit Data Produksi - {{ $item->no_lot ?? 'No Lot' }}</h5>
                 </div>
                 <form action="{{ route('items.update', $item->id) }}" method="POST">
                     @csrf

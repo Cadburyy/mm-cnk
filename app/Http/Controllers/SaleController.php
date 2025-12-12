@@ -9,6 +9,11 @@ use Carbon\Carbon;
 
 class SaleController extends Controller
 {
+    function __construct()
+    {
+         $this->middleware('permission:sale');
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {

@@ -34,9 +34,9 @@
                         @foreach($permission as $perm)
                             <div class="col-md-3 col-sm-6 mb-2">
                                 <div class="form-check">
-                                    <input type="checkbox" name="permission[]" value="{{ $perm->id }}" class="form-check-input" id="permission-{{ $perm->id }}" {{ old("permission.{$perm->id}") ? 'checked' : '' }}>
+                                    <input type="checkbox" name="permission[]" value="{{ $perm->id }}" class="form-check-input" id="permission-{{ $perm->id }}" {{ (is_array(old('permission')) && in_array($perm->id, old('permission'))) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="permission-{{ $perm->id }}">
-                                        {{ $perm->name }}
+                                        {{ ucfirst($perm->name) }}
                                     </label>
                                 </div>
                             </div>

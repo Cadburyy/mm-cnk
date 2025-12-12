@@ -286,18 +286,26 @@ $dropdownTextColor    = getTextColor($dropdownBgColor);
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('home') }}">Home</a>
                             </li>
+                            @can('item')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('items.index') }}">Produksi</a>
                             </li>
+                            @endcan
+                            @can('mutation')
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('mutations.index') }}">Mutasi</a>
+                                <a class="nav-link" href="{{ route('mutations.index') }}">Mutasi Barang</a>
                             </li>
+                            @endcan
+                            @can('sale')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('sales.index') }}">Penjualan</a>
                             </li>
+                            @endcan
+                            @can('weight')
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('weights.index') }}">Berat</a>
+                                <a class="nav-link" href="{{ route('weights.index') }}">Data Berat</a>
                             </li>
+                            @endcan
 
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
@@ -306,8 +314,9 @@ $dropdownTextColor    = getTextColor($dropdownBgColor);
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-
+                                    @can('setting')
                                     <a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a>
+                                    @endcan
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                         onclick="event.preventDefault();document.getElementById('logout-form').submit();">
