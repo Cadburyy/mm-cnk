@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <div class="card shadow-sm p-4">
+    <div class="card border-primary shadow-sm p-4">
         <form method="POST" action="{{ route('users.store') }}">
             @csrf
             <div class="row g-3">

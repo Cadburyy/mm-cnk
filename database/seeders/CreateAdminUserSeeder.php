@@ -10,9 +10,6 @@ use Spatie\Permission\Models\Permission;
 
 class CreateAdminUserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $user = User::create([
@@ -21,7 +18,7 @@ class CreateAdminUserSeeder extends Seeder
             'password' => bcrypt('admin')
         ]);
 
-        $role = Role::create(['name' => 'AdminIT']);
+        $role = Role::create(['name' => 'Admin']);
 
         $permissions = Permission::pluck('id','id')->all();
 

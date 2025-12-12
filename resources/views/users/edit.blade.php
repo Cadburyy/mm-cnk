@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <div class="card shadow-sm p-4">
+    <div class="card border-warning shadow-sm p-4">
         <form method="POST" action="{{ route('users.update', $user->id) }}">
             @csrf
             @method('PUT')
@@ -53,7 +53,7 @@
                     </select>
                 </div>
                 <div class="col-12 text-center mt-4">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-warning">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Submit
                     </button>
                 </div>

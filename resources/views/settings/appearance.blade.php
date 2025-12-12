@@ -27,7 +27,7 @@
         </div>
     @endif
 
-    <div class="card shadow-sm p-4">
+    <div class="card border-success shadow-sm p-4">
         <form method="POST" action="{{ route('settings.appearance.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')

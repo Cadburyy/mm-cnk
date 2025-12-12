@@ -15,7 +15,6 @@ class HomeController extends Controller
 
     public function index()
     {
-        // Simply return the view without fetching any date data
         return view('home');
     }
 }
