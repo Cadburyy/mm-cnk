@@ -53,7 +53,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Sisa Stock (KG)</label>
-                                <input type="text" id="display_stock" class="form-control" value="Loading..." readonly tabindex="-1">
+                                <input type="text" id="display_stock" class="form-control bg-secondary-subtle" value="Loading..." readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Berat (KG)</label>

@@ -77,11 +77,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang/Gram</label>
-                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-light" placeholder="Auto-filled" readonly tabindex="-1">
+                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-secondary-subtle" placeholder="Auto-filled" readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang Jadi (KG)</label>
-                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control @error('gkg') is-invalid @enderror" value="{{ old('gkg', $item->gkg) }}" autocomplete="off" readonly>
+                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control @error('gkg') is-invalid @enderror bg-secondary-subtle" value="{{ old('gkg', $item->gkg) }}" autocomplete="off" readonly>
                                 @error('gkg')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

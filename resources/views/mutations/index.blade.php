@@ -93,7 +93,7 @@
     </div>
 
     <div class="card shadow-lg">
-        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Mutasi' }}</div>
+        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Mutation' }}</div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
                 <p class="text-center text-muted p-4">Tidak ada data ditemukan.</p>
@@ -103,13 +103,13 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th class="text-center"><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
-                                        <td class="text-center"><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
+                                        <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
                                         <td class="text-center">
                                             <a href="{{ route('mutations.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                                         </td>
@@ -134,7 +134,7 @@
                                     @if (count($months) > 0)
                                         @foreach($months as $m) <th class="text-nowrap text-center" style="min-width:80px;">{{ $m['label'] }}</th> @endforeach
                                     @endif
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total (All)</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -206,7 +206,7 @@
                             <div id="monthly-subtotals-list" class="d-flex flex-wrap gap-3"></div>
                         </div>
                         <div class="table-responsive" style="max-height: 50vh;"><div id="detail-table-container"></div></div>
-                        <div class="mt-3 text-end border-top pt-2"><h5>Total Selected Metric: <span id="modal-metric-total" class="fw-bold font-monospace"></span></h5></div>
+                        <div class="mt-3 text-end border-top pt-2"><h5>Total Stock: <span id="modal-metric-total" class="fw-bold font-monospace"></span></h5></div>
                     </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button></div>
@@ -292,14 +292,13 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     res.details.forEach(d => {
-                        let isMut = d.transaction_type === 'sale';
-                        
+                        let isMut = d.transaction_type === 'sale'; 
+                        let typeLabel = isMut ? 'OUT' : 'IN';
                         let badgeClass = d.transaction_type === 'mutation' ? 'bg-success' : 'bg-warning text-dark';
-                        let typeLabel = d.transaction_type === 'mutation' ? 'MUTATION (IN)' : 'SALE (OUT)';
-
+                        
                         let rawScrap = parseFloat(d.scrap) || 0;
                         let rawCakalan = parseFloat(d.cakalan) || 0;
 
@@ -308,7 +307,9 @@ $(function() {
 
                         let textClass = isMut ? 'text-danger fw-bold' : 'text-dark';
 
-                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td><td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td><td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
+                        html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td>
+                        <td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td>
+                        <td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
                     });
                     html += '</tbody></table>';
                 }

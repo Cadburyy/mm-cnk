@@ -49,7 +49,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Sisa Stock (KG)</label>
-                                <input type="text" id="display_stock" class="form-control" readonly tabindex="-1">
+                                <input type="text" id="display_stock" class="form-control bg-secondary-subtle" readonly tabindex="-1">
                                 <small class="text-muted d-block mt-1">*Stock di Produksi</small>
                             </div>
                             <div class="col-md-4">

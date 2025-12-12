@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-dark">💰 Data Penjualan Barang</h1>
         <div>
-            <a href="{{ route('sales.create') }}" class="btn btn-primary shadow-sm">
+            <a href="{{ route('sales.create') }}" class="btn btn-success shadow-sm">
                 <i class="fas fa-plus me-1"></i> Input Penjualan
             </a>
         </div>
@@ -93,7 +93,7 @@
     </div>
 
     <div class="card shadow-lg">
-        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Penjualan' }}</div>
+        <div class="card-header bg-info text-black">{{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Sales' }}</div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
                 <p class="text-center text-muted p-4">Tidak ada data ditemukan.</p>
@@ -103,13 +103,13 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th class="text-center"><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Customer</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Customer</th><th>Material</th><th>Part</th><th>Tipe</th><th class="text-end">Berat (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
-                                        <td class="text-center"><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
+                                        <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
                                         <td class="text-center">
                                             <a href="{{ route('sales.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                                         </td>
@@ -135,7 +135,7 @@
                                     @if (count($months) > 0)
                                         @foreach($months as $m) <th class="text-nowrap text-center" style="min-width:80px;">{{ $m['label'] }}</th> @endforeach
                                     @endif
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total (All)</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -207,7 +207,7 @@
                             <div id="monthly-subtotals-list" class="d-flex flex-wrap gap-3"></div>
                         </div>
                         <div class="table-responsive" style="max-height: 50vh;"><div id="detail-table-container"></div></div>
-                        <div class="mt-3 text-end border-top pt-2"><h5>Total Penjualan: <span id="modal-metric-total" class="fw-bold font-monospace"></span></h5></div>
+                        <div class="mt-3 text-end border-top pt-2"><h5>Total Net Stock: <span id="modal-metric-total" class="fw-bold font-monospace"></span></h5></div>
                     </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button></div>
@@ -297,9 +297,8 @@ $(function() {
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     res.details.forEach(d => {
                         let isMut = d.transaction_type === 'sale';
-                        
-                        let badgeClass = d.transaction_type === 'mutation' ? 'bg-success' : 'bg-warning text-dark';
-                        let typeLabel = d.transaction_type === 'mutation' ? 'MUTATION (IN)' : 'SALE (OUT)';
+                        let typeLabel = isMut ? 'OUT' : 'IN';
+                        let badgeClass = isMut ? 'bg-warning text-dark' : 'bg-success';
                         
                         let rawScrap = parseFloat(d.scrap) || 0;
                         let rawCakalan = parseFloat(d.cakalan) || 0;

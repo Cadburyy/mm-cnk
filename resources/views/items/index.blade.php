@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-dark">📊 Data Produksi Barang</h1>
+        <h1 class="text-dark">📊 Data Transaksi Barang</h1>
         <div>
             <a href="{{ route('items.create') }}" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus me-1"></i> Input Produksi
@@ -105,13 +105,13 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th class="text-center"><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah (KG)</th><th class="text-end">Barang Jadi (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Deficit (KG)</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah (KG)</th><th class="text-end">Goods (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Deficit (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($items as $item)
                                     <tr>
-                                        <td class="text-center"><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
+                                        <td><input type="checkbox" class="select-detail" name="selected_ids[]" value="{{ $item->id }}"></td>
                                         <td class="text-center"><a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a></td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ $item->material }}</td><td>{{ $item->part }}</td><td>{{ $item->no_lot }}</td><td>{{ $item->kode }}</td>
@@ -133,7 +133,7 @@
                                     @if (count($months) > 0)
                                         @foreach($months as $m) <th class="text-nowrap text-center" style="min-width:80px;">{{ $m['label'] }}</th> @endforeach
                                     @endif
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -141,7 +141,10 @@
                                     @php
                                         $matUniqueId = md5($material);
                                         $matIds = implode(',', array_unique($matData['ids']));
-                                        $matTotal = $matData['total_all'];
+                                        $matTotal = 0;
+                                        foreach($matData['parts'] as $p) {
+                                            $matTotal += ($p['total_scrap'] ?? 0) + ($p['total_cakalan'] ?? 0);
+                                        }
                                     @endphp
 
                                     <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" 
@@ -160,7 +163,12 @@
 
                                         @if (count($months) > 0)
                                             @foreach($months as $m)
-                                                @php $val = $matData['months_all'][$m['key']] ?? 0; @endphp
+                                                @php 
+                                                    $val = 0;
+                                                    foreach($matData['parts'] as $p) {
+                                                        $val += ($p['months_scrap'][$m['key']] ?? 0) + ($p['months_cakalan'][$m['key']] ?? 0);
+                                                    }
+                                                @endphp
                                                 <td class="text-end font-monospace {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 2, ',', '.') }}</td>
                                             @endforeach
                                         @endif
@@ -171,7 +179,7 @@
                                         @php
                                             $partUniqueId = md5($material . $part);
                                             $partIds = implode(',', array_unique($partData['ids']));
-                                            $partTotal = $partData['total_all'];
+                                            $partTotal = ($partData['total_scrap'] ?? 0) + ($partData['total_cakalan'] ?? 0);
                                         @endphp
                                         <tr class="child-mat-{{ $matUniqueId }} parent-row" style="display:none; background-color: #fff; cursor: pointer;"
                                              data-id-list="{{ $partIds }}" 
@@ -189,14 +197,16 @@
                                             </td>
                                             @if (count($months) > 0)
                                                 @foreach($months as $m) 
-                                                    @php $val = $partData['months_all'][$m['key']] ?? 0; @endphp
+                                                    @php 
+                                                        $val = ($partData['months_scrap'][$m['key']] ?? 0) + ($partData['months_cakalan'][$m['key']] ?? 0);
+                                                    @endphp
                                                     <td class="text-end font-monospace small {{ $val < 0 ? 'text-danger fw-bold' : '' }}">{{ number_format($val, 2, ',', '.') }}</td> 
                                                 @endforeach
                                             @endif
                                             <td class="text-end font-monospace fw-bold small {{ $partTotal < 0 ? 'text-danger' : '' }}">{{ number_format($partTotal, 2, ',', '.') }}</td>
                                         </tr>
 
-                                        @foreach(['gkg' => 'Barang Jadi (GKG)', 'scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
+                                        @foreach(['scrap' => 'Scrap', 'cakalan' => 'Cakalan'] as $metricKey => $label)
                                             @if(($partData['total_'.$metricKey] ?? 0) != 0)
                                             <tr class="child-part-{{ $partUniqueId }}" style="display:none; background-color: #fdfdfd;">
                                                 <td></td>
@@ -237,7 +247,24 @@
                             <div id="monthly-subtotals-list" class="d-flex flex-wrap gap-3"></div>
                         </div>
                         <div class="table-responsive" style="max-height: 50vh;"><div id="detail-table-container"></div></div>
-                        <div class="mt-3 text-end border-top pt-2"><h5>Total Net Stock: <span id="modal-metric-total" class="fw-bold font-monospace"></span></h5></div>
+
+                        <div class="mt-3 border-top pt-2">
+                            <div class="d-flex justify-content-end align-items-center gap-4">
+                                <div class="text-end">
+                                    <span class="text-muted small d-block">Total Scrap</span>
+                                    <span id="modal-total-scrap" class="fw-bold font-monospace fs-5">0.00 Kg</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-muted small d-block">Total Cakalan</span>
+                                    <span id="modal-total-cakalan" class="fw-bold font-monospace fs-5">0.00 Kg</span>
+                                </div>
+                                <div class="vr"></div>
+                                <div class="text-end">
+                                    <span class="text-muted small d-block">Total Stock</span>
+                                    <span id="modal-metric-total" class="fw-bold font-monospace fs-4">0.00 Kg</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button></div>
@@ -307,9 +334,28 @@ $(function() {
                 if (level === 'material') { topLabel = 'MATERIAL'; headerTitle = rawName; }
 
                 $('#detail-content .mb-3:first').html(`<div class="card bg-light border-0"><div class="card-body py-2"><span class="text-muted small text-uppercase fw-bold">${topLabel}</span><div class="fw-bold text-primary fs-5">${headerTitle}</div></div></div>`);
+
+                let totalRecalculated = 0;
+                let totalScrap = 0;
+                let totalCakalan = 0;
+
+                res.details.forEach(d => {
+                    let s = parseFloat(d.scrap) || 0;
+                    let c = parseFloat(d.cakalan) || 0;
+                    let val = s + c;
+                    
+                    let multiplier = (d.transaction_type === 'mutation') ? -1 : 1;
+                    
+                    totalScrap += (s * multiplier);
+                    totalCakalan += (c * multiplier);
+                    totalRecalculated += (val * multiplier);
+                });
                 
-                let totalColor = res.total_display < 0 ? 'text-danger' : 'text-success';
-                $('#modal-metric-total').removeClass('text-danger text-success').addClass(totalColor).text(formatNumberJS(res.total_display) + ' Kg');
+                $('#modal-total-scrap').text(formatNumberJS(totalScrap) + ' Kg');
+                $('#modal-total-cakalan').text(formatNumberJS(totalCakalan) + ' Kg');
+                
+                let totalColor = totalRecalculated < 0 ? 'text-danger' : 'text-success';
+                $('#modal-metric-total').removeClass('text-danger text-success').addClass(totalColor).text(formatNumberJS(totalRecalculated) + ' Kg');
 
                 if (pivotSelections.length > 0 && res.monthly_subtotals && Object.keys(res.monthly_subtotals).length > 0) {
                     let subtotalsHtml = '';
@@ -323,25 +369,22 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Barang Jadi (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Material</th><th>Part</th><th>Type</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     res.details.forEach(d => {
                         let isMut = d.transaction_type === 'mutation';
                         let typeLabel = isMut ? 'OUT' : 'IN';
                         let badgeClass = isMut ? 'bg-warning text-dark' : 'bg-success';
                         
-                        let rawGkg = parseFloat(d.gkg) || 0;
                         let rawScrap = parseFloat(d.scrap) || 0;
                         let rawCakalan = parseFloat(d.cakalan) || 0;
 
-                        let dispGkg = isMut ? -rawGkg : rawGkg;
                         let dispScrap = isMut ? -rawScrap : rawScrap;
                         let dispCakalan = isMut ? -rawCakalan : rawCakalan;
 
                         let textClass = isMut ? 'text-danger fw-bold' : 'text-dark';
 
                         html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td>
-                        <td class="text-end ${textClass}">${formatNumberJS(dispGkg)}</td>
                         <td class="text-end ${textClass}">${formatNumberJS(dispScrap)}</td>
                         <td class="text-end ${textClass}">${formatNumberJS(dispCakalan)}</td></tr>`;
                     });

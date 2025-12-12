@@ -7,8 +7,8 @@
 
 <style>
     body, html {
-        overflow: hidden;
-
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .card-link-hover:hover .card {
@@ -26,16 +26,49 @@
         border: 1px solid #e9ecef; 
         box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075)!important;
     }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
 </style>
 
 <div class="container d-flex flex-column justify-content-center py-5">
 
-    <h2 class="text-center mb-1">
+    <h2 class="text-center mb-4">
         Welcome, {{ $user->name }} 
         <span role="img" aria-label="wave">👋</span>
     </h2>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4 justify-content-center mt-3 mb-5">
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h5 class="card-title text-center text-primary fw-bold">Stock Produksi (Scrap + Cakalan)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="prodChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h5 class="card-title text-center text-info fw-bold">Stock Mutasi (Scrap + Cakalan)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="mutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4 justify-content-center mb-5">
         <div class="col">
             <a href="{{ route('items.index') }}" class="text-decoration-none card-link-hover">
                 <div class="card h-100 text-center shadow-sm p-3">
@@ -91,4 +124,113 @@
         </div>
     @endif
 </div>
+
+<!-- Included Bootstrap JS Bundle manually -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data from Controller
+        const prodLabels = @json($prodLabels);
+        const prodBreakdown = @json($prodBreakdown);
+        
+        const mutLabels = @json($mutLabels);
+        const mutBreakdown = @json($mutBreakdown);
+
+        // Process Data for Bar Charts (Scrap vs Cakalan)
+        const prodScrapData = prodLabels.map(label => prodBreakdown[label]?.scrap || 0);
+        const prodCakalanData = prodLabels.map(label => prodBreakdown[label]?.cakalan || 0);
+
+        const mutScrapData = mutLabels.map(label => mutBreakdown[label]?.scrap || 0);
+        const mutCakalanData = mutLabels.map(label => mutBreakdown[label]?.cakalan || 0);
+
+        // Chart 1: Production Stock
+        if(prodLabels.length > 0) {
+            new Chart(document.getElementById('prodChart'), {
+                type: 'bar',
+                data: {
+                    labels: prodLabels,
+                    datasets: [
+                        {
+                            label: 'Scrap (KG)',
+                            data: prodScrapData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Cakalan (KG)',
+                            data: prodCakalanData,
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)', // Yellow
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: false },
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' Kg';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('prodChart').parentNode.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted">No Data Available</div>';
+        }
+
+        // Chart 2: Mutation Stock
+        if(mutLabels.length > 0) {
+            new Chart(document.getElementById('mutChart'), {
+                type: 'bar',
+                data: {
+                    labels: mutLabels,
+                    datasets: [
+                        {
+                            label: 'Scrap (KG)',
+                            data: mutScrapData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Cakalan (KG)',
+                            data: mutCakalanData,
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)', // Yellow
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: false },
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' Kg';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('mutChart').parentNode.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted">No Data Available</div>';
+        }
+    });
+</script>
 @endsection

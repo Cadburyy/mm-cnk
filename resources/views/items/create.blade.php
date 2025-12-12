@@ -54,11 +54,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang/Gram</label>
-                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-light" readonly tabindex="-1">
+                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-secondary-subtle" readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang Jadi (KG)</label>
-                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control" value="0" autocomplete="off" readonly>
+                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control bg-secondary-subtle" autocomplete="off" readonly>
                             </div>
                         </div>
 
