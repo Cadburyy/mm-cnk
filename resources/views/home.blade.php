@@ -7,8 +7,8 @@
 
 <style>
     body, html {
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden;
+
     }
 
     .card-link-hover:hover .card {

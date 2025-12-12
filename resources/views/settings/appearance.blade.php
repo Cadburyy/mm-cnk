@@ -99,7 +99,7 @@
                 </div>
 
                 <div class="col-12 text-center mt-3">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-success">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Save Changes
                     </button>
                 </div>

@@ -26,7 +26,7 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label for="name" class="form-label"><strong>Name:</strong></label>
-                    <input type="text" name="name" id="name" class="form-control" placeholder="Role Name" value="{{ old('name') }}" autocomplete="off">
+                    <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" autocomplete="off">
                 </div>
                 <div class="col-12">
                     <label class="form-label"><strong>Permissions:</strong></label>
