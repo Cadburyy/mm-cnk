@@ -42,13 +42,13 @@
     <form id="bulkDeleteForm" method="POST" action="{{ route('items.bulkDestroy') }}" style="display:none;">@csrf<div id="bulkDeleteIdsContainer"></div></form>
 
     <div class="d-flex mb-3 gap-2">
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume (Stock Balance)</a>
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details (Production Input)</a>
+        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume</a>
+        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details</a>
     </div>
 
     <div class="card shadow-lg">
         <div class="card-header bg-info text-black">
-            {{ $mode == 'details' ? 'Hasil Data - Details (Hanya Produksi)' : 'Hasil Data - Net Stock (Produksi - Mutasi) - No GKG' }}
+            {{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Produksi' }}
         </div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
@@ -59,7 +59,7 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah</th><th class="text-end">Goods</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Deficit</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah (KG)</th><th class="text-end">Goods (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Deficit (KG)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,14 +84,13 @@
                                 <tr>
                                     <th style="width:30px;" class="text-center">+/-</th>
                                     <th class="text-nowrap bg-primary text-white">Description</th>
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock (Scrap+Cakalan)</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock (Scrap + Cakalan)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($summary_tree as $material => $matData)
                                     @php
                                         $matUniqueId = md5($material);
-                                        // $matIds no longer needed for new logic
                                         $matTotal = $matData['total_all'];
                                     @endphp
                                     <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" 
@@ -209,7 +208,7 @@ $(function() {
         
         const level = $(this).data('level');
         const name = $(this).data('name');
-        const material = $(this).data('material') || name; // For material row, name is material
+        const material = $(this).data('material') || name;
         const part = (level === 'part') ? name : '';
 
         let headerTitle = (level === 'material') ? material : material + ' - ' + part;
@@ -250,7 +249,7 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Total</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Material</th><th>Part</th><th>Type</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Total (KG)</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     
                     let runningBalance = parseFloat(res.stock_awal) || 0;
@@ -262,7 +261,7 @@ $(function() {
                         
                         let s = parseFloat(d.scrap)||0;
                         let c = parseFloat(d.cakalan)||0;
-                        let val = s + c; // Positive Value
+                        let val = s + c;
 
                         if (isMut) {
                             runningBalance -= val;
