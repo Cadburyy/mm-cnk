@@ -49,9 +49,25 @@ class ItemController extends Controller
             
             if (!empty($selected_months)) $monthly_subtotals = $monthly_subtotals->filter(fn($v, $k) => in_array($k, $selected_months));
 
+            $start_date = $request->get('start_date');
+            $stock_awal = 0; $in = 0; $out = 0;
+
+            if ($start_date) {
+            }
+
+            foreach($details as $d) {
+                $val = $d->scrap + $d->cakalan;
+                if ($d->transaction_type === 'mutation') $out += $val;
+                else $in += $val;
+            }
+            $stock_akhir = $stock_awal + $in - $out;
+
             return response()->json([
-                'item_key' => $item_key, 'total_display' => $total_display, 'details' => $details,
-                'monthly_subtotals' => $monthly_subtotals->sortKeysDesc()
+                'item_key' => $item_key, 
+                'total_display' => $total_display, 
+                'details' => $details,
+                'monthly_subtotals' => $monthly_subtotals->sortKeysDesc(),
+                'stock_awal' => $stock_awal, 'in' => $in, 'out' => $out, 'stock_akhir' => $stock_akhir
             ]);
         }
 
@@ -121,7 +137,7 @@ class ItemController extends Controller
                 $val_gkg = $item->gkg * $multiplier;
                 $val_scrap = $item->scrap * $multiplier;
                 $val_cakalan = $item->cakalan * $multiplier;
-                $total_all = $val_gkg + $val_scrap + $val_cakalan;
+                $total_all = $val_scrap + $val_cakalan;
 
                 if (!isset($summary_tree[$mat])) $summary_tree[$mat] = ['total_all' => 0, 'months_all' => [], 'parts' => [], 'ids' => []];
                 if (!isset($summary_tree[$mat]['parts'][$part])) {
@@ -189,39 +205,53 @@ class ItemController extends Controller
     public function downloadCsv(Request $request)
     {
         $ids = (array)$request->input('selected_ids', []);
-        if (empty($ids)) return back()->with('error', 'No data selected for download');
-
+        if (empty($ids)) return back()->with('error', 'No data selected');
         $items = Item::whereIn('id', $ids)->orderBy('tanggal', 'desc')->get();
-        $filename = "items_production_export_" . date('Ymd') . ".csv";
+        return $this->streamCsv($items, 'items_production_export_');
+    }
 
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
+    public function downloadPopupCsv(Request $request)
+    {
+        $id_list = $request->input('id_list');
+        $ids = array_filter(array_map('trim', explode(',', $id_list)));
+        $items = Item::whereIn('id', $ids)->orderBy('tanggal', 'asc')->get();
+        
+        $firstItem = $items->first();
+        $headerInfo = $firstItem ? ($firstItem->material . ' - ' . ($firstItem->part ?? 'No Part')) : '';
 
-        $callback = function() use($items) {
+        return $this->streamCsv($items, 'items_resume_detail_export_', $headerInfo);
+    }
+
+    private function streamCsv($items, $prefix, $headerInfo = null) {
+        $filename = $prefix . date('Ymd') . ".csv";
+        $headers = ["Content-type" => "text/csv", "Content-Disposition" => "attachment; filename=$filename", "Pragma" => "no-cache", "Cache-Control" => "must-revalidate, post-check=0, pre-check=0", "Expires" => "0"];
+        $callback = function() use($items, $headerInfo) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Tanggal', 'Material', 'Part', 'Lot', 'Kode', 'Berat Mentah', 'Barang Jadi (GKG)', 'Scrap', 'Cakalan']);
 
+            if($headerInfo) {
+                fputcsv($file, ['MATERIAL: ' . $headerInfo]);
+                fputcsv($file, []);
+            }
+
+            fputcsv($file, ['Tanggal', 'Material', 'Part', 'Type', 'Scrap', 'Cakalan', 'Total (+/-)']);
+            
             foreach ($items as $item) {
+                $val = $item->scrap + $item->cakalan;
+                $total = ($item->transaction_type === 'mutation') ? -$val : $val;
+                $typeLabel = ($item->transaction_type === 'mutation') ? 'OUT (Mutasi)' : 'IN (Produksi)';
+
                 fputcsv($file, [
-                    $item->tanggal->format('Y-m-d'),
-                    $item->material,
-                    $item->part,
-                    $item->no_lot,
-                    $item->kode,
-                    $item->berat_mentah,
-                    $item->gkg,
-                    $item->scrap,
-                    $item->cakalan
+                    $item->tanggal->format('Y-m-d'), 
+                    $item->material, 
+                    $item->part, 
+                    $typeLabel,
+                    $item->scrap, 
+                    $item->cakalan,
+                    $total
                 ]);
             }
             fclose($file);
         };
-
         return response()->stream($callback, 200, $headers);
     }
 
