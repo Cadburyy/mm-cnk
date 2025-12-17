@@ -125,26 +125,21 @@
     @endif
 </div>
 
-<!-- Included Bootstrap JS Bundle manually -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Data from Controller
         const prodLabels = @json($prodLabels);
         const prodBreakdown = @json($prodBreakdown);
         
         const mutLabels = @json($mutLabels);
         const mutBreakdown = @json($mutBreakdown);
 
-        // Process Data for Bar Charts (Scrap vs Cakalan)
         const prodScrapData = prodLabels.map(label => prodBreakdown[label]?.scrap || 0);
         const prodCakalanData = prodLabels.map(label => prodBreakdown[label]?.cakalan || 0);
 
         const mutScrapData = mutLabels.map(label => mutBreakdown[label]?.scrap || 0);
         const mutCakalanData = mutLabels.map(label => mutBreakdown[label]?.cakalan || 0);
 
-        // Chart 1: Production Stock
         if(prodLabels.length > 0) {
             new Chart(document.getElementById('prodChart'), {
                 type: 'bar',
@@ -154,13 +149,13 @@
                         {
                             label: 'Scrap (KG)',
                             data: prodScrapData,
-                            backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
                             borderWidth: 1
                         },
                         {
                             label: 'Cakalan (KG)',
                             data: prodCakalanData,
-                            backgroundColor: 'rgba(255, 206, 86, 0.7)', // Yellow
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)',
                             borderWidth: 1
                         }
                     ]
@@ -188,7 +183,6 @@
             document.getElementById('prodChart').parentNode.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted">No Data Available</div>';
         }
 
-        // Chart 2: Mutation Stock
         if(mutLabels.length > 0) {
             new Chart(document.getElementById('mutChart'), {
                 type: 'bar',
@@ -198,13 +192,13 @@
                         {
                             label: 'Scrap (KG)',
                             data: mutScrapData,
-                            backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
                             borderWidth: 1
                         },
                         {
                             label: 'Cakalan (KG)',
                             data: mutCakalanData,
-                            backgroundColor: 'rgba(255, 206, 86, 0.7)', // Yellow
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)',
                             borderWidth: 1
                         }
                     ]
