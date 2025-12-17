@@ -167,11 +167,10 @@
                         <div class="mt-3 border-top pt-3">
                              <table class="table table-bordered table-sm text-center">
                                 <thead class="table-light">
-                                    <tr><th>Stock Awal</th><th>In (Mut)</th><th>Out (Sale)</th><th>Stock Akhir</th></tr>
+                                    <tr><th>In (Mut)</th><th>Out (Sale)</th><th>Stock Akhir</th></tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="fw-bold" id="res_stock_awal"></td>
                                         <td class="fw-bold text-success" id="res_in"></td>
                                         <td class="fw-bold text-danger" id="res_out"></td>
                                         <td class="fw-bold" id="res_stock_akhir"></td>
@@ -238,7 +237,6 @@ $(function() {
                     </div>
                 `);
                 
-                $('#res_stock_awal').text(formatNumberJS(res.stock_awal));
                 $('#res_in').text(formatNumberJS(res.in));
                 $('#res_out').text(formatNumberJS(res.out));
                 $('#res_stock_akhir').text(formatNumberJS(res.stock_akhir));
@@ -248,7 +246,7 @@ $(function() {
                     let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Total (KG)</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     
-                    let runningBalance = parseFloat(res.stock_awal) || 0;
+                    let runningBalance = 0;
 
                     res.details.forEach(d => {
                         let isSale = d.transaction_type === 'sale';

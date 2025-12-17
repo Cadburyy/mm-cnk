@@ -17,7 +17,7 @@
     <form method="GET" action="{{ route('items.index') }}" class="row mb-4" id="filterForm">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">Filter Data</div>
+                <div class="card-header bg-light fw-bold">Filter Data Barang</div>
                 <div class="card-body">
                      <div class="row g-3 mb-2">
                         <div class="col-lg-3 col-md-6"><label class="form-label fw-bold">Start Date</label><input type="date" name="start_date" value="{{ $start_date }}" class="form-control"></div>
@@ -42,13 +42,13 @@
     <form id="bulkDeleteForm" method="POST" action="{{ route('items.bulkDestroy') }}" style="display:none;">@csrf<div id="bulkDeleteIdsContainer"></div></form>
 
     <div class="d-flex mb-3 gap-2">
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume</a>
-        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details</a>
+        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'resume'])) }}" class="btn {{ $mode == 'resume' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Resume (Stock Balance)</a>
+        <a href="{{ route('items.index', array_merge(request()->query(), ['mode' => 'details'])) }}" class="btn {{ $mode == 'details' ? 'btn-info text-white shadow-lg' : 'btn-outline-info' }}">Details (Production Input)</a>
     </div>
 
     <div class="card shadow-lg">
         <div class="card-header bg-info text-black">
-            {{ $mode == 'details' ? 'Hasil Data - Details' : 'Hasil Data - Resume Produksi' }}
+            {{ $mode == 'details' ? 'Hasil Data - Details (Hanya Produksi)' : 'Hasil Data - Net Stock (Produksi - Mutasi) - No GKG' }}
         </div>
         <div class="card-body p-0">
             @if (($items->isEmpty() && $mode == 'details') || ($mode == 'resume' && empty($summary_tree)))
@@ -59,7 +59,7 @@
                         <table class="table table-bordered table-striped table-hover table-sm mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah (KG)</th><th class="text-end">Goods (KG)</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Deficit (KG)</th>
+                                    <th><input type="checkbox" id="select-all-details"></th><th class="text-center">Aksi</th><th>Tanggal</th><th>Material</th><th>Part</th><th>Lot</th><th>Kode</th><th class="text-end">Berat Mentah</th><th class="text-end">Goods</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Deficit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,21 +84,17 @@
                                 <tr>
                                     <th style="width:30px;" class="text-center">+/-</th>
                                     <th class="text-nowrap bg-primary text-white">Description</th>
-                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock (Scrap + Cakalan)</th>
+                                    <th class="text-nowrap text-center" style="min-width:90px;">Total Stock (Scrap+Cakalan)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($summary_tree as $material => $matData)
                                     @php
                                         $matUniqueId = md5($material);
-                                        $matIds = implode(',', array_unique($matData['ids']));
-                                        $matTotal = 0;
-                                        foreach($matData['parts'] as $p) {
-                                            $matTotal += ($p['total_scrap'] ?? 0) + ($p['total_cakalan'] ?? 0);
-                                        }
+                                        // $matIds no longer needed for new logic
+                                        $matTotal = $matData['total_all'];
                                     @endphp
                                     <tr class="resume-row parent-row" style="background-color: #f0f0f0; cursor: pointer;" 
-                                        data-id-list="{{ $matIds }}" 
                                         data-level="material" 
                                         data-name="{{ $material }}">
                                         <td class="text-center stop-propagation">
@@ -111,11 +107,9 @@
                                     @foreach($matData['parts'] as $part => $partData)
                                         @php
                                             $partUniqueId = md5($material . $part);
-                                            $partIds = implode(',', array_unique($partData['ids']));
-                                            $partTotal = ($partData['total_scrap'] ?? 0) + ($partData['total_cakalan'] ?? 0);
+                                            $partTotal = $partData['total_all'];
                                         @endphp
                                         <tr class="child-mat-{{ $matUniqueId }} parent-row" style="display:none; background-color: #fff; cursor: pointer;"
-                                             data-id-list="{{ $partIds }}" 
                                              data-level="part"
                                              data-name="{{ $part }}"
                                              data-material="{{ $material }}">
@@ -153,7 +147,9 @@
                     <div class="ms-auto">
                         <form id="popupDownloadForm" method="POST" action="{{ route('items.downloadPopupCsv') }}" class="d-inline">
                             @csrf
-                            <input type="hidden" name="id_list" id="popup_id_list">
+                            <input type="hidden" name="material" id="popup_material">
+                            <input type="hidden" name="part" id="popup_part">
+                            <input type="hidden" name="level" id="popup_level">
                             <input type="hidden" name="start_date" id="popup_start_date">
                             <input type="hidden" name="end_date" id="popup_end_date">
                             <button type="submit" class="btn btn-light btn-sm"><i class="fas fa-download"></i> Download CSV</button>
@@ -210,17 +206,17 @@ $(function() {
 
     $(document).on('click', '.parent-row', function(e) {
         if ($(e.target).closest('.toggle-btn').length) return;
-        const idList = $(this).data('id-list');
         
         const level = $(this).data('level');
         const name = $(this).data('name');
-        let headerTitle = name;
-        if (level === 'part') {
-            const materialName = $(this).data('material');
-            headerTitle = materialName + ' - ' + name;
-        }
+        const material = $(this).data('material') || name; // For material row, name is material
+        const part = (level === 'part') ? name : '';
 
-        $('#popup_id_list').val(idList);
+        let headerTitle = (level === 'material') ? material : material + ' - ' + part;
+
+        $('#popup_material').val(material);
+        $('#popup_part').val(part);
+        $('#popup_level').val(level);
         $('#popup_start_date').val(start_date);
         $('#popup_end_date').val(end_date);
 
@@ -229,7 +225,14 @@ $(function() {
 
         $.ajax({
             url: '{{ route("items.index") }}',
-            data: { action: 'pivot_row_details', id_list: idList, start_date: start_date, end_date: end_date },
+            data: { 
+                action: 'pivot_row_details', 
+                material: material, 
+                part: part,
+                level: level,
+                start_date: start_date, 
+                end_date: end_date 
+            },
             success: function(res) {
                 $('#detail-loading').hide(); $('#detail-content').show();
                 
@@ -247,7 +250,7 @@ $(function() {
 
                 let html = '<div class="text-center text-muted">No details.</div>';
                 if(res.details && res.details.length > 0) {
-                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap (KG)</th><th class="text-end">Cakalan (KG)</th><th class="text-end">Total (KG)</th></tr>';
+                    let tableHead = '<tr><th>Tanggal</th><th>Mat</th><th>Part</th><th>Type</th><th class="text-end">Scrap</th><th class="text-end">Cakalan</th><th class="text-end">Total</th></tr>';
                     html = '<table class="table table-sm table-striped table-bordered mb-0"><thead class="bg-white sticky-top">' + tableHead + '</thead><tbody>';
                     
                     let runningBalance = parseFloat(res.stock_awal) || 0;
@@ -259,14 +262,14 @@ $(function() {
                         
                         let s = parseFloat(d.scrap)||0;
                         let c = parseFloat(d.cakalan)||0;
-                        let val = s + c;
+                        let val = s + c; // Positive Value
 
                         if (isMut) {
                             runningBalance -= val;
                         } else {
                             runningBalance += val;
                         }
-                        
+
                         let textClass = isMut ? 'text-danger' : 'text-success';
 
                         html += `<tr><td>${formatDateJS(d.tanggal)}</td><td>${d.material}</td><td>${d.part||'-'}</td><td><span class="badge ${badgeClass}">${typeLabel}</span></td>
