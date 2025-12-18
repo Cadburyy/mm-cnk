@@ -257,7 +257,7 @@ $(function() {
                     res.details.forEach(d => {
                         let isMut = d.transaction_type === 'mutation';
                         let typeLabel = isMut ? 'OUT' : 'IN';
-                        let badgeClass = isMut ? 'bg-danger text-dark' : 'bg-success';
+                        let badgeClass = isMut ? 'bg-danger' : 'bg-success';
                         
                         let s = parseFloat(d.scrap)||0;
                         let c = parseFloat(d.cakalan)||0;

@@ -45,7 +45,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-white border-0 pt-3 pb-0">
-                    <h5 class="card-title text-center text-primary fw-bold">Stock Produksi (Scrap + Cakalan)</h5>
+                    <h5 class="card-title text-center text-primary fw-bold">Stock Produksi</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -57,7 +57,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-white border-0 pt-3 pb-0">
-                    <h5 class="card-title text-center text-info fw-bold">Stock Mutasi (Scrap + Cakalan)</h5>
+                    <h5 class="card-title text-center text-info fw-bold">Stock Mutasi</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -75,7 +75,7 @@
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <i class="fas fa-industry fa-3x mb-3 text-primary"></i>
                         <h5 class="card-title"><strong>Produksi</strong></h5>
-                        <p class="card-text text-muted small">Input hasil produksi (GKG, Scrap, Cakalan).</p>
+                        <p class="card-text text-muted small">Input hasil produksi (Goods, Scrap, Cakalan).</p>
                     </div>
                 </div>
             </a>
