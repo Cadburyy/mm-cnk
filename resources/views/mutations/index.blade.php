@@ -251,7 +251,7 @@ $(function() {
                     res.details.forEach(d => {
                         let isSale = d.transaction_type === 'sale';
                         let typeLabel = isSale ? 'OUT' : 'IN';
-                        let badgeClass = isSale ? 'bg-warning text-dark' : 'bg-success';
+                        let badgeClass = isSale ? 'bg-danger text-dark' : 'bg-success';
                         
                         let s = parseFloat(d.scrap)||0;
                         let c = parseFloat(d.cakalan)||0;
