@@ -54,7 +54,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Berat Mutasi (KG)</label>
-                                <input type="number" step="0.01" name="berat" class="form-control" required>
+                                <input type="number" step="0.001" name="berat" class="form-control" required>
                             </div>
                         </div>
                     </div>

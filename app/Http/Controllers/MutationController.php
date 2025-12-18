@@ -157,7 +157,7 @@ class MutationController extends Controller
 
     public function create() { $materials = Item::where('transaction_type', 'production')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('mutations.create', compact('materials')); }
     public function store(Request $request) { 
-        $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','tipe_barang'=>'required|in:gkg,scrap,cakalan','berat'=>'required|numeric|min:0.01']);
+        $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','tipe_barang'=>'required|in:gkg,scrap,cakalan','berat'=>'required|numeric|min:0.001']);
         $col = $request->tipe_barang; $filter = [['material','=',$request->material], ['part','=',$request->part]];
         $prod = Item::where('transaction_type','production')->where($filter)->sum($col);
         $used = Item::where('transaction_type','mutation')->where($filter)->sum($col);
@@ -168,7 +168,7 @@ class MutationController extends Controller
     public function edit($id) { $item = Item::where('id',$id)->where('transaction_type','mutation')->firstOrFail(); $materials = Item::where('transaction_type','production')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('mutations.edit', compact('item','materials')); }
     public function update(Request $request, $id) { 
         $item = Item::where('id',$id)->where('transaction_type','mutation')->firstOrFail();
-        $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','berat'=>'required|numeric|min:0.01']);
+        $request->validate(['tanggal'=>'required|date','material'=>'required','part'=>'required','berat'=>'required|numeric|min:0.001']);
         $col = ($item->scrap > 0) ? 'scrap' : (($item->cakalan > 0) ? 'cakalan' : 'gkg');
         $filter = [['material','=',$request->material], ['part','=',$request->part]];
         $prod = Item::where('transaction_type','production')->where($filter)->sum($col);

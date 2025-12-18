@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('material');
             $table->string('part');
-            $table->decimal('weight', 8, 2);
+            $table->decimal('weight', 8, 3);
             $table->unique(['material', 'part']);
         });
     }

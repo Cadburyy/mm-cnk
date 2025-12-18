@@ -117,7 +117,7 @@ class SaleController extends Controller
 
     public function create() { $materials = Item::where('transaction_type', 'mutation')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('sales.create', compact('materials')); }
     public function store(Request $request) { 
-        $request->validate(['tanggal'=>'required|date','customer'=>'required','material'=>'required','part'=>'required','tipe_barang'=>'required|in:gkg,scrap,cakalan','berat'=>'required|numeric|min:0.01']);
+        $request->validate(['tanggal'=>'required|date','customer'=>'required','material'=>'required','part'=>'required','tipe_barang'=>'required|in:gkg,scrap,cakalan','berat'=>'required|numeric|min:0.001']);
         $col = $request->tipe_barang; $filter = [['material','=',$request->material], ['part','=',$request->part]];
         $mut = Item::where('transaction_type','mutation')->where($filter)->sum($col);
         $sold = Item::where('transaction_type','sale')->where($filter)->sum($col);
@@ -128,7 +128,7 @@ class SaleController extends Controller
     public function edit($id) { $item = Item::where('id',$id)->where('transaction_type','sale')->firstOrFail(); $materials = Item::where('transaction_type','mutation')->select('material')->distinct()->orderBy('material')->pluck('material'); return view('sales.edit', compact('item','materials')); }
     public function update(Request $request, $id) { 
         $item = Item::where('id',$id)->where('transaction_type','sale')->firstOrFail();
-        $request->validate(['tanggal'=>'required|date','customer'=>'required','material'=>'required','part'=>'required','berat'=>'required|numeric|min:0.01']);
+        $request->validate(['tanggal'=>'required|date','customer'=>'required','material'=>'required','part'=>'required','berat'=>'required|numeric|min:0.001']);
         $col = ($item->scrap > 0) ? 'scrap' : (($item->cakalan > 0) ? 'cakalan' : 'gkg');
         $filter = [['material','=',$request->material], ['part','=',$request->part]];
         $mut = Item::where('transaction_type','mutation')->where($filter)->sum($col);

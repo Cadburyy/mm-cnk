@@ -57,7 +57,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Berat (KG)</label>
-                                <input type="number" step="0.01" name="berat" class="form-control" value="{{ $item->scrap > 0 ? $item->scrap : ($item->cakalan > 0 ? $item->cakalan : $item->gkg) }}" required>
+                                <input type="number" step="0.001" name="berat" class="form-control" value="{{ $item->scrap > 0 ? $item->scrap : ($item->cakalan > 0 ? $item->cakalan : $item->gkg) }}" required>
                             </div>
                         </div>
                     </div>

@@ -20,11 +20,11 @@ return new class extends Migration
             $table->string('part')->nullable();
             $table->string('no_lot')->nullable();
             $table->string('kode')->nullable();
-            $table->decimal('berat_mentah', 15, 2)->default(0);
+            $table->decimal('berat_mentah', 15, 3)->default(0);
             $table->integer('gpcs')->default(0);
-            $table->decimal('gkg', 15, 2)->default(0);
-            $table->decimal('scrap', 15, 2)->default(0);
-            $table->decimal('cakalan', 15, 2)->default(0);
+            $table->decimal('gkg', 15, 3)->default(0);
+            $table->decimal('scrap', 15, 3)->default(0);
+            $table->decimal('cakalan', 15, 3)->default(0);
 
             $table->timestamps();
         });

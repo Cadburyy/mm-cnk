@@ -29,7 +29,7 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Standard Berat (Gram)</label>
-                            <input type="number" step="0.01" name="weight" class="form-control @error('weight') is-invalid @enderror" value="{{ old('weight') }}" required autocomplete="off">
+                            <input type="number" step="0.001" name="weight" class="form-control @error('weight') is-invalid @enderror" value="{{ old('weight') }}" required autocomplete="off">
                             @error('weight')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

@@ -41,7 +41,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Berat Mentah</label>
-                                <input type="number" step="0.01" name="berat_mentah" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
+                                <input type="number" step="0.001" name="berat_mentah" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                         </div>
 
@@ -50,26 +50,26 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang Jadi (PCS)</label>
-                                <input type="number" step="0.01" name="gpcs" id="input_gpcs" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
+                                <input type="number" step="0.001" name="gpcs" id="input_gpcs" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang/Gram</label>
-                                <input type="number" step="0.01" id="input_gweight" class="form-control bg-secondary-subtle" readonly tabindex="-1">
+                                <input type="number" step="0.001" id="input_gweight" class="form-control bg-secondary-subtle" readonly tabindex="-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barang Jadi (KG)</label>
-                                <input type="number" step="0.01" name="gkg" id="input_gkg" class="form-control bg-secondary-subtle" autocomplete="off" readonly>
+                                <input type="number" step="0.001" name="gkg" id="input_gkg" class="form-control bg-secondary-subtle" autocomplete="off" readonly>
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Scrap (KG)</label>
-                                <input type="number" step="0.01" name="scrap" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
+                                <input type="number" step="0.001" name="scrap" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Cakalan (KG)</label>
-                                <input type="number" step="0.01" name="cakalan" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
+                                <input type="number" step="0.001" name="cakalan" class="form-control" value="0" autocomplete="off" onblur="this.value = parseFloat(this.value).toFixed(2)">
                             </div>
                         </div>
                     </div>
